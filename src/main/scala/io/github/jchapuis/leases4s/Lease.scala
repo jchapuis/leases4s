@@ -9,9 +9,11 @@ trait Lease[F[_]] {
   def holder: F[HolderID]
   def labels: F[List[Label]]
 
-  /** Returns a boolean flag as soon as can figure out the state of the lease: we semantically block until either
-    * the duration of the lease is elapsed or the lease is deleted, or it is renewed by the holder (in which case we return false)
-    * (we can't compare times because of clock skew)
+  /** Returns a boolean flag as soon as can figure out the state of the lease: we semantically block until whichever comes first:
+    *  - the duration of the lease is elapsed (we can't compare times because of clock skew)
+    *  - the lease is deleted
+    *  - it is renewed by the holder (in which case return false)
+    *
     * @return true if the lease is expired, false otherwise
     */
   def isExpired: F[Boolean]

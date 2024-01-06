@@ -9,7 +9,7 @@ import io.k8s.apimachinery.pkg.apis.meta.v1.{MicroTime, ObjectMeta}
 import java.time.Instant
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
-private[impl] object K8sHelpers {
+object K8sHelpers {
   def leaseEventFromV1(event: WatchEvent[v1.Lease]): Option[LeaseDataEvent] = event.`type` match {
     case EventType.ADDED =>
       leaseIDFromK8s(event.`object`).zip(leaseDataFromK8s(event.`object`)).map(LeaseDataEvent.Added.tupled)
@@ -35,7 +35,7 @@ private[impl] object K8sHelpers {
       labels: List[Label],
       acquireTime: Instant,
       leaseDuration: FiniteDuration
-  ): v1.Lease = v1LeaseFor(id, holderID, labels, None, acquireTime, None, leaseDuration)
+  ): v1.Lease = v1LeaseFor(id, holderID, labels, Some(Version.Nil), acquireTime, None, leaseDuration)
 
   def leaseIDFromK8s(lease: v1.Lease): Option[LeaseID] = lease.metadata.flatMap(_.name).flatMap(LeaseID(_))
 

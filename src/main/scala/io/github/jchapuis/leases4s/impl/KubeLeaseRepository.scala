@@ -36,6 +36,7 @@ private[impl] class KubeLeaseRepository[F[_]: Async: Random: Logger](
 )(implicit parameters: LeaseParameters, namespace: Namespace = Namespace.Default, client: KubernetesClient[F])
     extends LeaseRepository[F] {
   private val leases = client.leases.namespace(namespace)
+  private lazy val unit = Applicative[F].unit
 
   def acquire(id: LeaseID, holder: HolderID)(implicit parameters: LeaseParameters): Resource[F, HeldLease[F]] =
     for {
@@ -43,11 +44,15 @@ private[impl] class KubeLeaseRepository[F[_]: Async: Random: Logger](
         poll(
           acquireLease(id, holder).retryWithBackoff(
             throwable =>
-              Logger[F].error(show"Failed to acquire lease $id for $holder: ${throwable.getMessage}, retrying..."),
+              Logger[F].warn(show"Failed to acquire lease $id for $holder: ${throwable.getMessage}, retrying..."),
             parameters.baseOnErrorRetryDelay
           )
         )
-      )(delete)
+      )(
+        delete(_).handleErrorWith(error =>
+          Logger[F].warn(error)(show"Failed to delete lease $id upon release, leaving it up for expiry...")
+        )
+      )
       _ <- Resource.makeFull((poll: Poll[F]) => poll(scheduleLeaseRenewal(lease, holder).start))(_.cancel)
     } yield lease
 
@@ -58,27 +63,34 @@ private[impl] class KubeLeaseRepository[F[_]: Async: Random: Logger](
       _ <- lease.holder
         .map(_ === holderID)
         .ifM(
-          ifTrue = Applicative[F].unit,
+          ifTrue = unit,
           ifFalse = new RuntimeException(show"Lease ${lease.id} is no longer held by $holderID").raiseError
         )
       _ <- Logger[F].debug(show"Renewing lease ${lease.id}")
-      _ <- renewLease(lease)
+      _ <- renewLease(lease).retryWithBackoff(
+        throwable =>
+          Logger[F].warn(show"Failed to renew lease ${lease.id} for $holderID: ${throwable.getMessage}, retrying..."),
+        parameters.baseOnErrorRetryDelay
+      )
       _ <- Logger[F].debug(show"Renewed lease ${lease.id}")
       _ <- scheduleLeaseRenewal(lease, holderID)
     } yield ()).handleErrorWith { throwable =>
-      Logger[F].error(show"Failed to renew lease ${lease.id}: ${throwable.getMessage}, giving it up...")
+      Logger[F].error(show"Definitive failure in renewing lease ${lease.id}: ${throwable.getMessage}, giving up...")
     }
 
   private def renewLease(lease: KubeLease[F]) =
     for {
       now <- Clock[F].realTimeInstant
       data <- lease.data.get
-      _ <- update(lease.id, data.copy(duration = parameters.leaseDuration, lastRenewTime = Some(now)))
+      renewedData = data.copy(duration = parameters.leaseDuration, lastRenewTime = Some(now))
+      status <- leases.createOrUpdate(k8sLeaseFromData(lease.id, renewedData))
+      _ <- Applicative[F].unlessA(status.isSuccess)(
+        MonadError[F, Throwable].raiseError(new RuntimeException(status.sanitizedReason))
+      )
     } yield ()
 
   private def acquireLease(id: LeaseID, holder: HolderID): F[KubeLease[F]] = {
     for {
-      _ <- Logger[F].debug(show"Retrieving existing leases with '$id'")
       maybeExistingLease <- getLease(id)
       heldLease <- maybeExistingLease.map(claimUntilHeld(_, holder)).getOrElse(createLease(id, holder))
       _ <- Logger[F].info(show"Acquired lease $id for $holder")
@@ -91,7 +103,7 @@ private[impl] class KubeLeaseRepository[F[_]: Async: Random: Logger](
       .ifM(
         ifTrue = for {
           _ <- Logger[F]
-            .debug(show"Lease ${existingLease.id} already held by $claimant, renewing it")
+            .debug(show"Lease ${existingLease.id} is (or was) already held by $claimant, renewing it")
           _ <- renewLease(existingLease)
         } yield existingLease,
         ifFalse = for {
@@ -100,20 +112,21 @@ private[impl] class KubeLeaseRepository[F[_]: Async: Random: Logger](
             .debug(show"Lease ${existingLease.id} already held by $existingHolder, waiting for it to expire")
           _ <- existingLease.expired.compile.drain
           _ <- Logger[F]
-            .debug(show"Lease ${existingLease.id} that was held by $existingHolder has expired, attempting to claim it")
+            .debug(
+              show"Lease ${existingLease.id} that was held by $existingHolder has expired, cleaning it up and attempting to recreate it"
+            )
+          _ <- existingLease.data.get.map(_.deleted).ifF(unit, delete(existingLease))
           lease <- createLease(existingLease.id, claimant)
         } yield lease
       )
 
   private def createLease(id: LeaseID, holderID: HolderID): F[KubeLease[F]] =
     (for {
-      _ <- OptionT.liftF(Logger[F].debug(show"Creating lease $id for $holderID"))
+      _ <- OptionT.liftF(Logger[F].debug(show"Attempting to create lease $id for $holderID"))
       deferredCreatedLease <- OptionT.liftF(Deferred[F, Option[KubeLease[F]]])
       _ <- OptionT.liftF(nextAcquiredLeaseFor(id, holderID).flatTap(deferredCreatedLease.complete).start)
       now <- OptionT.liftF(Clock[F].realTimeInstant)
-      status <- OptionT.liftF(
-        leases.createOrUpdate(k8sLease(id, holderID, labels, now, parameters.leaseDuration))
-      )
+      status <- OptionT.liftF(leases.createOrUpdate(k8sLease(id, holderID, labels, now, parameters.leaseDuration)))
       _ <- OptionT.liftF(
         if (!status.isSuccess) Logger[F].warn(show"Failed to create lease $id for $holderID: ${status.reason}")
         else ().pure[F]
@@ -126,23 +139,13 @@ private[impl] class KubeLeaseRepository[F[_]: Async: Random: Logger](
     leaseAcquiredTopic.subscribeUnbounded
       .filter(_.id === id)
       .evalFilter(_.holder.map(_ === holderID))
-      .take(1)
+      .head
       .compile
       .last
 
-  private def update(id: LeaseID, lease: LeaseData) =
-    for {
-      status <- leases.createOrUpdate(k8sLeaseFromData(id, lease))
-      _ <-
-        if (status.isSuccess) Logger[F].debug(show"Created or updated lease $id")
-        else
-          Logger[F].warn(show"Failed to update lease $id: ${status.sanitizedReason}") >> MonadError[F, Throwable]
-            .raiseError(new RuntimeException(status.sanitizedReason))
-    } yield ()
-
   private def delete(lease: KubeLease[F]) =
     for {
-      _ <- Logger[F].debug(show"Deleting acquired lease ${lease.id}")
+      _ <- Logger[F].debug(show"Deleting lease ${lease.id}")
       version <- lease.version
       status <- leases.delete(
         lease.id,

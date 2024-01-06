@@ -1,7 +1,7 @@
 package io.github.jchapuis.leases4s.impl
 
-import cats.effect.kernel.{Async, Fiber, MonadCancel, Ref, Resource}
-import cats.effect.std.Supervisor
+import cats.data.OptionT
+import cats.effect.kernel.{Async, Fiber, Ref, Resource}
 import cats.effect.syntax.resource.*
 import cats.effect.syntax.spawn.*
 import cats.syntax.eq.*
@@ -18,6 +18,8 @@ import io.github.jchapuis.leases4s.impl.model.{LeaseData, LeaseDataEvent}
 import io.github.jchapuis.leases4s.model.*
 import io.k8s.api.coordination.v1.LeaseList
 import org.typelevel.log4cats.Logger
+import scala.jdk.DurationConverters.*
+import JavaTimeHelpers.*
 
 private[impl] class AutoUpdatingLeaseMap[F[_]: Async: Logger](leaseMap: LeaseMap[F], topics: Topics[F]) {
   def start: Resource[F, Fiber[F, Throwable, Unit]] =
@@ -25,31 +27,54 @@ private[impl] class AutoUpdatingLeaseMap[F[_]: Async: Logger](leaseMap: LeaseMap
 
   private def handleDataEvent(leaseDataEvent: LeaseDataEvent) =
     (leaseDataEvent match {
-      case LeaseDataEvent.Added(id, data) =>
-        Logger[F].debug(show"Lease $id was added: $data") >> createAndPublishLeaseAcquired(id, data)
-      case LeaseDataEvent.Modified(id, data) =>
-        leaseMap.get.map(_.get(id)).flatMap {
-          case Some(lease) =>
-            for {
-              _ <- Logger[F].debug(show"Lease $id was modified: $data")
-              hasHolderChanged <- lease.holder.map(_ =!= data.holder)
-              _ <- lease.data.set(data)
-              _ <-
-                if (hasHolderChanged)
-                  Logger[F]
-                    .debug(show"Lease $id was acquired by ${data.holder}") >> publishLeaseAcquired(data.holder, lease)
-                else Logger[F].debug(show"Lease $id was renewed by ${data.holder}")
-            } yield ()
-          case None =>
-            Logger[F].debug(show"Lease $id was recreated: $data") >> createAndPublishLeaseAcquired(id, data)
-        }
-      case LeaseDataEvent.Deleted(id) =>
-        Logger[F].debug(show"Lease $id was deleted") >> leaseMap.update(_ - id) >> topics.events.publish1(
-          LeaseEvent.Released(id)
-        )
+      case LeaseDataEvent.Added(id, data)        => handleAddedEvent(id, data)
+      case LeaseDataEvent.Modified(id, modified) => handleModifiedEvent(id, modified)
+      case LeaseDataEvent.Deleted(id)            => handleDeletedEvent(id)
     }).void.handleErrorWith(throwable =>
       Logger[F].error(show"Failed to handle event for lease ${leaseDataEvent.id}: ${throwable.getMessage}, skipping...")
     )
+
+  private def handleAddedEvent(id: LeaseID, data: LeaseData) =
+    Logger[F].debug(show"Lease $id was added: $data") >> createAndPublishLeaseAcquired(id, data)
+
+  private def handleDeletedEvent(id: LeaseID) = Logger[F].debug(show"Lease $id was deleted") >> OptionT(getDataFor(id))
+    .map(
+      _.data.update(_.copy(deleted = true))
+    )
+    .value >> leaseMap.update(_ - id) >> topics.events.publish1(LeaseEvent.Released(id))
+
+  private def handleModifiedEvent(id: LeaseID, modified: LeaseData) = {
+    getDataFor(id).flatMap {
+      case Some(lease) => handleModifiedLease(lease, modified)
+      case None =>
+        Logger[F].debug(show"Lease $id was recreated: $modified") >> createAndPublishLeaseAcquired(id, modified)
+    }
+  }
+
+  private def handleModifiedLease(lease: KubeLease[F], modified: LeaseData) = {
+    for {
+      _ <- Logger[F].debug(show"Lease ${lease.id} was modified: $modified")
+      hasHolderChanged <- lease.holder.map(_ =!= modified.holder)
+      isLateRenewal <- lease.data.get
+        .map(data =>
+          (
+            data.lastRenewTime.getOrElse(data.acquireTime),
+            modified.lastRenewTime.getOrElse(modified.acquireTime)
+          )
+        )
+        .map { case (priorTime, newTime) => newTime.isAfter(priorTime.plus(modified.duration.toJava)) }
+      _ <- lease.data.set(modified)
+      _ <-
+        if (hasHolderChanged || isLateRenewal)
+          Logger[F]
+            .debug(
+              show"Lease ${lease.id} was ${if (hasHolderChanged) "acquired" else "reacquired"} by ${modified.holder}"
+            ) >> publishLeaseAcquired(modified.holder, lease)
+        else Logger[F].debug(show"Lease ${lease.id} was renewed by ${modified.holder}")
+    } yield ()
+  }
+
+  private def getDataFor(leaseID: LeaseID) = leaseMap.get.map(_.get(leaseID))
 
   private def createAndPublishLeaseAcquired(id: LeaseID, data: LeaseData) =
     createKubeLeaseFor(id, data, topics.watcher).flatMap { case (id, lease) =>
@@ -75,6 +100,10 @@ private[impl] object AutoUpdatingLeaseMap {
     } yield leaseMap
   }
 
-  private def createKubeLeaseFor[F[_]: Async](id: LeaseID, data: LeaseData, watcherTopic: Topic[F, LeaseDataEvent]) =
+  private def createKubeLeaseFor[F[_]: Async](
+      id: LeaseID,
+      data: LeaseData,
+      watcherTopic: Topic[F, LeaseDataEvent]
+  ) =
     Ref.of(data).map(ref => id -> new KubeLease[F](id, ref, watcherTopic))
 }

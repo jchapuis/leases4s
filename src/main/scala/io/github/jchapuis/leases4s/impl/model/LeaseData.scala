@@ -11,7 +11,8 @@ private[impl] final case class LeaseData(
     version: Version,
     duration: FiniteDuration,
     acquireTime: Instant,
-    lastRenewTime: Option[Instant]
+    lastRenewTime: Option[Instant],
+    deleted: Boolean = false
 )
 
 private[impl] object LeaseData {

@@ -8,6 +8,8 @@ scalaVersion := scala213
 
 crossScalaVersions := Seq(scala213, scala3)
 
+addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
+
 Compile / scalacOptions ++= {
   CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((2, _)) => Seq("-Xsource:3")
