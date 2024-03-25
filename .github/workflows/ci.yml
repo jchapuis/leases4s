@@ -1,0 +1,21 @@
+name: CI
+on:
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: AbsaOSS/k3d-action@v2
+        name: "Create Kube Cluster"
+        with:
+          cluster-name: "local"
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: coursier/setup-action@v1.3.3
+        with:
+          jvm: temurin:17
+          apps: sbt
+      - run: sbt + compile coverage test coverageReport coverageAggregate versionPolicyCheck
+      - uses: codecov/codecov-action@v3
+
