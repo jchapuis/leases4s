@@ -5,17 +5,38 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: AbsaOSS/k3d-action@v2
-        name: "Create Kube Cluster"
+      - name: "Create Kube Cluster"
+        uses: AbsaOSS/k3d-action@v2
         with:
           cluster-name: "local"
-      - uses: actions/checkout@v3
+          args: >-
+            -p "8080:80@loadbalancer"
+      - name: Start LocalStack
+        uses: LocalStack/setup-localstack@main
+        with:
+          image-tag: 'latest'
+          install-awslocal: 'true'
+      - name: "Checkout"
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: coursier/setup-action@v1.3.3
+      - name: "Setup Coursier"
+        uses: coursier/setup-action@v1.3.3
         with:
           jvm: temurin:17
           apps: sbt
-      - run: sbt + compile coverage test coverageReport coverageAggregate versionPolicyCheck
-      - uses: codecov/codecov-action@v3
+      - name: "Compile and unit test"
+        run: sbt + compile coverage test coverageReport versionPolicyCheck
+      - name: "Build docker example image"
+        run: sbt "project example" jibDockerBuild
+      - name: "Import example docker image in k3d"
+        run: k3d image import localhost/io.github.jchapuis/leases4s-example:local -c local
+      - name: "Deploy example"
+        run: pulumilocal up --stack example
+     # - name: "Run integration tests for example"
+     #   run: sbt "project example" coverage it:test coverageReport
+      - name: "Coverage aggregate"
+        uses: codecov/codecov-action@v3
+        run: sbt coverageAggregate
+
 

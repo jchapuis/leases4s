@@ -7,6 +7,7 @@ import io.github.jchapuis.leases4s.K3dClientProvider
 import io.github.jchapuis.leases4s.LeaseRepository.LeaseParameters
 import io.github.jchapuis.leases4s.impl.KubeLeaseRepository
 import io.github.jchapuis.leases4s.model.{KubeString, Label}
+import io.github.jchapuis.leases4s.model.literals.*
 import io.github.jchapuis.leases4s.patterns.cluster.Member
 import io.github.jchapuis.leases4s.patterns.cluster.Membership.{Card, Cards}
 import io.github.jchapuis.leases4s.patterns.cluster.impl.LeaseBasedCluster
@@ -17,14 +18,14 @@ import org.typelevel.log4cats.slf4j.Slf4jLogger
 import scala.concurrent.duration.DurationInt
 
 class LeaseBasedClusterSuite extends CatsEffectSuite with K3dClientProvider {
-  implicit lazy val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
+  implicit lazy val logger: Logger[IO]                  = Slf4jLogger.getLogger[IO]
   implicit private val leaseParameters: LeaseParameters = LeaseParameters.Default
   implicit private val clusterParameters: LeaseBasedCluster.Parameters =
-    LeaseBasedCluster.Parameters(KubeString.apply("test-cluster").get)
-  private val repositoryLabel = Label("type", "cluster").get
-  private val memberA = Member("localhost", 8080, Set(KubeString("master").get)).get
-  private val memberB = Member("localhost", 8081, Set(KubeString("slave").get)).get
-  private val memberC = Member("localhost", 8082, Set(KubeString("slave").get)).get
+    LeaseBasedCluster.Parameters(ks"test-cluster")
+  private val repositoryLabel = Label(ks"type", ks"cluster")
+  private val memberA         = Member("localhost", 8080, Set(ks"master")).get
+  private val memberB         = Member("localhost", 8081, Set(ks"slave")).get
+  private val memberC         = Member("localhost", 8082, Set(ks"slave")).get
 
   private def assertStreamEmits[A](stream: fs2.Stream[IO, A])(value: A, others: A*): IO[Unit] =
     stream
@@ -41,8 +42,8 @@ class LeaseBasedClusterSuite extends CatsEffectSuite with K3dClientProvider {
           (membershipA, releaseA) <- cluster.join(memberA).allocated
 
           // assertions for first member
-          _ <- assertIO(membershipA.card, Card(0).some)
-          _ <- assertIO(membershipA.cards, Cards(Some(Card(0)), Map.empty))
+          _                 <- assertIO(membershipA.card, Card(0).some)
+          _                 <- assertIO(membershipA.cards, Cards(Some(Card(0)), Map.empty))
           memberACardStream <- assertStreamEmits(membershipA.cardChanges.take(1))(Card(0)).start
           memberACardsStream <- assertStreamEmits(membershipA.cardsChanges.take(3))(
             Cards(Some(Card(0)), Map.empty),
@@ -54,8 +55,8 @@ class LeaseBasedClusterSuite extends CatsEffectSuite with K3dClientProvider {
           (membershipB, releaseB) <- cluster.join(memberB).allocated
 
           // assertions for second member
-          _ <- assertIO(membershipB.card, Card(1).some)
-          _ <- assertIO(membershipB.cards, Cards(Some(Card(1)), Map(Card(0) -> memberA)))
+          _                 <- assertIO(membershipB.card, Card(1).some)
+          _                 <- assertIO(membershipB.cards, Cards(Some(Card(1)), Map(Card(0) -> memberA)))
           memberBCardStream <- assertStreamEmits(membershipB.cardChanges.take(2))(Card(1), Card(0)).start
           memberBCardsStream <- assertStreamEmits(membershipB.cardsChanges.take(3))(
             Cards(Some(Card(1)), Map(Card(0) -> memberA)),
@@ -122,10 +123,10 @@ class LeaseBasedClusterSuite extends CatsEffectSuite with K3dClientProvider {
           (_, releaseA) <- cluster.join(memberA).allocated
           (_, releaseB) <- cluster.join(memberB).allocated
           (_, releaseC) <- cluster.join(memberC).allocated
-          _ <- releaseA
-          _ <- releaseB
-          _ <- releaseC
-          _ <- countStream.joinWithUnit
+          _             <- releaseA
+          _             <- releaseB
+          _             <- releaseC
+          _             <- countStream.joinWithUnit
         } yield ()
       }
     }
@@ -137,7 +138,7 @@ class LeaseBasedClusterSuite extends CatsEffectSuite with K3dClientProvider {
         .map(LeaseBasedCluster[IO])
         .flatMap { cluster =>
           for {
-            counter <- Ref.of[IO, Int](0).toResource
+            counter     <- Ref.of[IO, Int](0).toResource
             membershipA <- cluster.join(memberA)
             membershipB <- cluster.join(memberB)
             membershipC <- cluster.join(memberC)
@@ -184,7 +185,7 @@ class LeaseBasedClusterSuite extends CatsEffectSuite with K3dClientProvider {
                 _ <- IO.raiseError(new RuntimeException("operation should be cancelled"))
               } yield ()
             }.start
-            _ <- release
+            _       <- release
             outcome <- operation.join.flatMap(_.embedError)
           } yield assert(outcome.isCanceled)
         }
