@@ -34,7 +34,7 @@ jobs:
       - name: "Install pulumilocal"
         run: pip install pulumi-local
       - name: "Deploy example"
-        run: cd deployer; pulumi login --local; pulumi stack init example; pulumilocal up --stack example
+        run: cd deployer; pulumi login --local; export PULUMI_CONFIG_PASSPHRASE=foobar; pulumi stack init example; pulumilocal up --stack example
      # - name: "Run integration tests for example"
      #   run: sbt "project example" coverage it:test coverageReport
       - name: "Coverage aggregate"
