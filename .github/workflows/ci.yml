@@ -31,6 +31,8 @@ jobs:
         run: sbt "project example" jibDockerBuild
       - name: "Import example docker image in k3d"
         run: k3d image import localhost/io.github.jchapuis/leases4s-example:local -c local
+      - name: "Install pulumilocal"
+        run: pip install pulumi-local
       - name: "Deploy example"
         run: pulumilocal up --stack example
      # - name: "Run integration tests for example"
