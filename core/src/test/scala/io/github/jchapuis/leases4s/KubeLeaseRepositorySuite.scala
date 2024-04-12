@@ -12,23 +12,23 @@ import io.github.jchapuis.leases4s.model.*
 import munit.CatsEffectSuite
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-
+import io.github.jchapuis.leases4s.model.literals.*
 import scala.concurrent.duration.*
 
 class KubeLeaseRepositorySuite extends CatsEffectSuite with K3dClientProvider {
   override def munitIOTimeout: FiniteDuration = 60.seconds
-  implicit lazy val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
-  private val testLabel = Label("foo", "bar").get
+  implicit lazy val logger: Logger[IO]        = Slf4jLogger.getLogger[IO]
+  private val testLabel                       = Label(ks"foo", ks"bar")
   private val testAnnotations =
-    List(Annotation("test", "first-annotation").get, Annotation("test", "second-annotation").get)
-  private val holderID = HolderID("test-holder").get
+    List(Annotation(ks"test", ks"first-annotation"), Annotation(ks"test", ks"second-annotation"))
+  private val holderID                             = HolderID(ks"test-holder")
   implicit private val parameters: LeaseParameters = LeaseParameters(leaseDuration = 10.seconds)
-  private lazy val sleep = IO.sleep(1.second)
+  private lazy val sleep                           = IO.sleep(1.second)
 
   test("a lease can be acquired and is automatically renewed (before expiration)") {
     withKubeClient { implicit client =>
       KubeLeaseRepository[IO](testLabel).use { repository =>
-        repository.acquire(LeaseID("acquire-test-lease").get, holderID).use { lease =>
+        repository.acquire(LeaseID(ks"acquire-test-lease"), holderID).use { lease =>
           for {
             _ <- IO.sleep(parameters.leaseDuration + 1.second)
             _ <- assertIOBoolean(lease.isExpired.map(!_))
@@ -88,10 +88,10 @@ class KubeLeaseRepositorySuite extends CatsEffectSuite with K3dClientProvider {
             .map { case (winner, loser) =>
               (winner.fold(fail("should not cancel"), fail("should not throw", _), _.flatten), loser)
             }
-          _ <- sleep
-          _ <- releaseNext
+          _            <- sleep
+          _            <- releaseNext
           finalRelease <- lastCompetitor.joinWithNever
-          _ <- finalRelease
+          _            <- finalRelease
         } yield ()
       }
     }
@@ -138,12 +138,12 @@ class KubeLeaseRepositorySuite extends CatsEffectSuite with K3dClientProvider {
             .acquire(LeaseID("introspection-test-lease").get, holderID, testAnnotations)
             .allocated
           handle <- deferredHandle.get
-          _ <- IO(assertEquals(handle.id, lease.id))
-          _ <- handle.holder.both(lease.holder) >>= assertTupleEqual
-          _ <- handle.labels.both(lease.labels) >>= assertTupleEqual
-          _ <- handle.annotations.both(lease.annotations) >>= assertTupleEqual
-          _ <- handle.isExpired.both(lease.isExpired) >>= assertTupleEqual
-          _ <- release
+          _      <- IO(assertEquals(handle.id, lease.id))
+          _      <- handle.holder.both(lease.holder) >>= assertTupleEqual
+          _      <- handle.labels.both(lease.labels) >>= assertTupleEqual
+          _      <- handle.annotations.both(lease.annotations) >>= assertTupleEqual
+          _      <- handle.isExpired.both(lease.isExpired) >>= assertTupleEqual
+          _      <- release
         } yield ()
       }
     }
@@ -154,13 +154,13 @@ class KubeLeaseRepositorySuite extends CatsEffectSuite with K3dClientProvider {
       KubeLeaseRepository[IO](testLabel).use { repository =>
         for {
           (lease, release) <- repository.acquire(LeaseID("get-test-lease").get, holderID, testAnnotations).allocated
-          handle <- repository.get(lease.id).map(_.get)
-          _ <- IO(assertEquals(lease.id, handle.id))
-          _ <- handle.holder.both(lease.holder) >>= assertTupleEqual
-          _ <- handle.labels.both(lease.labels) >>= assertTupleEqual
-          _ <- handle.annotations.both(lease.annotations) >>= assertTupleEqual
-          _ <- handle.isExpired.both(lease.isExpired) >>= assertTupleEqual
-          _ <- release
+          handle           <- repository.get(lease.id).map(_.get)
+          _                <- IO(assertEquals(lease.id, handle.id))
+          _                <- handle.holder.both(lease.holder) >>= assertTupleEqual
+          _                <- handle.labels.both(lease.labels) >>= assertTupleEqual
+          _                <- handle.annotations.both(lease.annotations) >>= assertTupleEqual
+          _                <- handle.isExpired.both(lease.isExpired) >>= assertTupleEqual
+          _                <- release
         } yield ()
       }
     }
@@ -171,10 +171,10 @@ class KubeLeaseRepositorySuite extends CatsEffectSuite with K3dClientProvider {
       KubeLeaseRepository[IO](testLabel).use { repository =>
         for {
           (lease, release) <- repository.acquire(LeaseID("is-expired-after-release-test-lease").get, holderID).allocated
-          _ <- sleep // allow some time to avoid DELETE version conflict
-          _ <- release
-          _ <- sleep
-          _ <- assertIOBoolean(lease.isExpired)
+          _                <- sleep // allow some time to avoid DELETE version conflict
+          _                <- release
+          _                <- sleep
+          _                <- assertIOBoolean(lease.isExpired)
         } yield ()
       }
     }
@@ -185,10 +185,10 @@ class KubeLeaseRepositorySuite extends CatsEffectSuite with K3dClientProvider {
       KubeLeaseRepository[IO](testLabel).use { repository =>
         for {
           (lease, release) <- repository.acquire(LeaseID("no-handle-after-release-test-lease").get, holderID).allocated
-          _ <- sleep // allow some time to avoid DELETE version conflict
-          _ <- release
-          _ <- sleep
-          _ <- assertIOBoolean(repository.get(lease.id).map(_.isEmpty))
+          _                <- sleep // allow some time to avoid DELETE version conflict
+          _                <- release
+          _                <- sleep
+          _                <- assertIOBoolean(repository.get(lease.id).map(_.isEmpty))
         } yield ()
       }
     }
@@ -198,11 +198,11 @@ class KubeLeaseRepositorySuite extends CatsEffectSuite with K3dClientProvider {
     withKubeClient { implicit client =>
       KubeLeaseRepository[IO](testLabel).use { repository =>
         for {
-          expired <- Deferred[IO, Unit]
+          expired          <- Deferred[IO, Unit]
           (lease, release) <- repository.acquire(LeaseID("expiry-test-lease").get, holderID).allocated
-          _ <- lease.expired.evalTap(expired.complete).compile.drain.start
-          _ <- release
-          _ <- expired.get
+          _                <- lease.expired.evalTap(expired.complete).compile.drain.start
+          _                <- release
+          _                <- expired.get
         } yield ()
       }
     }
@@ -231,8 +231,8 @@ class KubeLeaseRepositorySuite extends CatsEffectSuite with K3dClientProvider {
               .drain
               .start
             (_, release) <- repository.acquire(leaseID, holderID).allocated
-            _ <- acquired.get.assertEquals(holderID)
-            _ <- release
+            _            <- acquired.get.assertEquals(holderID)
+            _            <- release
           } yield ()
         }
       } yield ()
@@ -285,7 +285,7 @@ class KubeLeaseRepositorySuite extends CatsEffectSuite with K3dClientProvider {
     withKubeClient { implicit client =>
       KubeLeaseRepository[IO](testLabel).use { repository =>
         for {
-          boolean <- Ref.of[IO, Boolean](false)
+          boolean          <- Ref.of[IO, Boolean](false)
           (lease, release) <- repository.acquire(LeaseID("guard-cancel-test-lease").get, holderID).allocated
           fiber <- lease
             .guard(sleep >> boolean.set(true))

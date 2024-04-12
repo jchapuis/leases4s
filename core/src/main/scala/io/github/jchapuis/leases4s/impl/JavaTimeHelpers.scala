@@ -4,6 +4,6 @@ import cats.Order
 
 import java.time.Instant
 
-object JavaTimeHelpers {
+private[impl] object JavaTimeHelpers {
   implicit val instantOrder: Order[Instant] = Order.from[Instant](_.compareTo(_))
 }

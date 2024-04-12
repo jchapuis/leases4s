@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>Uploaded Files</title>
+        <style>
+            .page-body{ background-color: #f0f0f0; font-family: Arial, sans-serif; margin: 0px; padding: 0px; } .page-container{ background-color: #fff; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); margin: 50px auto; max-width: 800px; padding: 20px; } .page-heading{ color: #333; text-align: center; } .page-table{ border-collapse: collapse; margin-top: 20px; width: 100%; } .page-th{ background-color: #f2f2f2; border-bottom: 1px solid #ddd; padding: 10px; text-align: left; } .page-a{ color: #f0f0f0; text-decoration: none; } .page-aHover:hover{ text-decoration: underline; } .page-uploadLink{ display: block; margin-bottom: 20px; text-align: center; } .page-uploadLinkA{ background-color: #4CAF50; padding: 10px 20px; }
+        </style>
+    </head>
+    <body class="page-body">
+        <div class="page-container">
+            <h1 class="page-heading">Uploaded Files</h1>
+            <div class="page-uploadLink page-container">
+                <a 
+                class="page-container page-a page-aHover page-uploadLinkA" href="upload.html">
+                    Upload a file
+</a>
+            </div>
+            <table class="page-table">
+                <thead>
+                    <tr>
+                        <th class="page-th">Name</th>
+                        <th class="page-th">
+                            <a href="index-by-description.html">Description</a>
+                        </th>
+                        <th class="page-th">
+                            <a href="index-by-word-count.html">Word Count</a>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="baz">baz</a>
+                        </td>
+                        <td>qux</td>
+                        <td>2</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="foo">foo</a>
+                        </td>
+                        <td>bar</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="quux">quux</a>
+                        </td>
+                        <td>corge</td>
+                        <td>3</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </body>
+</html>

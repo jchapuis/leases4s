@@ -30,14 +30,14 @@ private[impl] class AutoUpdatingLeaseMap[F[_]: Temporal: Logger: KubeApi: Random
   def start: Resource[F, Unit] =
     topics.watcher.subscribeUnbounded.evalTap(handleDataEvent).compile.drain.background.void
 
-  private def handleDataEvent(leaseDataEvent: LeaseDataEvent) =
-    (leaseDataEvent match {
-      case LeaseDataEvent.Added(id, data)        => handleAddedEvent(id, data)
-      case LeaseDataEvent.Modified(id, modified) => handleModifiedEvent(id, modified)
-      case LeaseDataEvent.Deleted(id)            => handleDeletedEvent(id)
-    }).void.handleErrorWith(throwable =>
-      Logger[F].error(show"Failed to handle event for lease ${leaseDataEvent.id}: ${throwable.getMessage}, skipping...")
-    )
+  private def handleDataEvent(leaseDataEvent: LeaseDataEvent) = (leaseDataEvent match {
+    case LeaseDataEvent.Added(id, data)        => handleAddedEvent(id, data)
+    case LeaseDataEvent.Modified(id, modified) => handleModifiedEvent(id, modified)
+    case LeaseDataEvent.Deleted(id)            => handleDeletedEvent(id).void
+  }).handleErrorWith(throwable =>
+    Logger[F]
+      .error(show"Failed to handle event for lease ${leaseDataEvent.id}: ${throwable.getMessage}, skipping...")
+  )
 
   private def handleAddedEvent(id: LeaseID, data: LeaseData) =
     Logger[F].debug(show"Lease $id was added: $data") >> createAndPublishLeaseAcquired(id, data)
