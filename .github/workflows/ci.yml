@@ -42,4 +42,4 @@ jobs:
       - name: "Coverage aggregate"
         run: sbt coverageAggregate
       - name: "Upload coverage"
-        run: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v3
