@@ -36,7 +36,6 @@ jobs:
      # - name: "Run integration tests for example"
      #   run: sbt "project example" coverage it:test coverageReport
       - name: "Coverage aggregate"
-        uses: codecov/codecov-action@v3
         run: sbt coverageAggregate
-
-
+      - name: "Upload coverage"
+        run: codecov/codecov-action@v3
