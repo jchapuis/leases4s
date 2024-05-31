@@ -1,6 +1,6 @@
-val scala3 = "3.3.1"
+val scala3 = "3.4.1"
 
-ThisBuild / scalaVersion      := scala3
+ThisBuild / scalaVersion := scala3
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val root = (project in file("."))
@@ -14,9 +14,9 @@ lazy val root = (project in file("."))
   )
   .settings(
     libraryDependencies ++= Seq(
-      "org.virtuslab" %% "besom-core"            % "0.2.2",
-      "org.virtuslab" %% "besom-compiler-plugin" % "0.2.2",
-      "org.virtuslab" %% "besom-aws"             % "6.23.0-core.0.2",
-      "org.virtuslab" %% "besom-kubernetes"      % "4.8.0-core.0.2"
+      "org.virtuslab" %% "besom-core" % "0.3.1",
+      "org.virtuslab" %% "besom-compiler-plugin" % "0.3.1",
+      "org.virtuslab" %% "besom-aws" % "6.31.0-core.0.3",
+      "org.virtuslab" %% "besom-kubernetes" % "4.11.0-core.0.3"
     )
   )

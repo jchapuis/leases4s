@@ -11,7 +11,7 @@ jobs:
           cluster-name: "local"
           args: >-
             -p "8080:80@loadbalancer"
-      - name: Start LocalStack
+      - name: Start AWS LocalStack
         uses: LocalStack/setup-localstack@main
         with:
           image-tag: 'latest'
@@ -32,13 +32,13 @@ jobs:
       - name: "Import example docker image in k3d"
         run: k3d image import localhost/io.github.jchapuis/leases4s-example:local -c local
       - name: "Install besom plugin"
-        run: pulumi plugin install language scala 0.2.2 --server github://api.github.com/VirtusLab/besom
-      - name: "Install pulumilocal"
+        run: pulumi plugin install language scala 0.3.1 --server github://api.github.com/VirtusLab/besom
+      - name: "Install pulumilocal (wrapper script for pulumi using AWS LocalStack)"
         run: pip install pulumi-local
       - name: "Deploy example"
         run: cd deployer; pulumi login --local; export PULUMI_CONFIG_PASSPHRASE=foobar; pulumi stack init example; pulumilocal up --stack example --yes
-     # - name: "Run integration tests for example"
-     #   run: sbt "project example" coverage it:test coverageReport
+      - name: "Run tests of example app"
+        run: sbt "project example" coverage test coverageReport
       - name: "Coverage aggregate"
         run: sbt coverageAggregate
       - name: "Upload coverage"
