@@ -26,5 +26,11 @@ import java.io.File
     )
   }
 
-  Stack(serviceUser, bucket, siteUpload, serviceAccount, service).exports(websiteUrl = bucket.map(_.websiteEndpoint))
+  Stack(
+    serviceUser,
+    bucket,
+    siteUpload,
+    serviceAccount,
+    service
+  ).exports(websiteUrl = bucket.map(_.websiteEndpoint))
 }

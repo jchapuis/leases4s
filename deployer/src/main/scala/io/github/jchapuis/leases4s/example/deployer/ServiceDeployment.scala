@@ -20,12 +20,9 @@ case class ServiceDeploymentArgs(
     env: List[EnvVarArgs] = List.empty
 )
 
-case class ServiceDeployment(
-    service: Output[Service],
-    deployment: Output[Deployment],
-    ingresses: Output[List[Ingress]]
-)(using ComponentBase)
-    extends ComponentResource
+case class ServiceDeployment(ipAddress: Output[Option[String]])(using
+    ComponentBase
+) extends ComponentResource
     derives RegistersOutputs
 
 def serviceDeployment(using Context)(
@@ -34,8 +31,9 @@ def serviceDeployment(using Context)(
     componentResourceOptions: ComponentResourceOptions = ComponentResourceOptions()
 ): Output[ServiceDeployment] =
   component(name, "k8sx:service:ServiceDeployment", componentResourceOptions) {
-    val labels          = Map("app" -> name)
-    val deploymentPorts = args.ports.map(port => ContainerPortArgs(containerPort = port))
+    val labels = Map("app" -> name)
+    val deploymentPorts =
+      args.ports.map(port => ContainerPortArgs(containerPort = port))
 
     val container = ContainerArgs(
       name = name,
@@ -58,28 +56,46 @@ def serviceDeployment(using Context)(
           replicas = args.replicas,
           template = PodTemplateSpecArgs(
             metadata = ObjectMetaArgs(labels = labels),
-            spec = PodSpecArgs(containers = List(container), serviceAccountName = args.serviceAccount)
+            spec = PodSpecArgs(
+              containers = List(container),
+              serviceAccountName = args.serviceAccount
+            )
           )
         )
       )
     )
 
-    val servicePorts = args.ports.map(port => ServicePortArgs(port = port, targetPort = port))
+    val servicePorts =
+      args.ports.map(port => ServicePortArgs(port = port, targetPort = port))
 
     val service = Service(
       name,
       ServiceArgs(
         metadata = ObjectMetaArgs(labels = labels, name = name),
-        spec = ServiceSpecArgs(`type` = ServiceSpecType.ClusterIP, ports = servicePorts, selector = labels)
+        spec = ServiceSpecArgs(
+          `type` = ServiceSpecType.ClusterIP,
+          ports = servicePorts,
+          selector = labels
+        )
       )
     )
 
-    val ingresses = args.ports.traverse(port => ingressFor(name, port))
+    val ingresses: Output[List[Ingress]] =
+      args.ports.traverse(port => ingressFor(name, port))
 
-    ServiceDeployment(service, deployment, ingresses)
+    val ipAddresses = for {
+      _   <- deployment
+      _   <- service
+      _   <- ingresses
+      ips <- service.spec.clusterIP
+    } yield ips
+
+    ServiceDeployment(ipAddresses)
   }
 
-private def ingressFor(name: NonEmptyString, port: Int)(using Context): Output[Ingress] = Ingress(
+private def ingressFor(name: NonEmptyString, port: Int)(using
+    Context
+): Output[Ingress] = Ingress(
   name,
   IngressArgs(
     metadata = ObjectMetaArgs(annotations = Map("ingress.kubernetes.io/ssl-redirect" -> "false")),
@@ -92,7 +108,10 @@ private def ingressFor(name: NonEmptyString, port: Int)(using Context): Output[I
                 path = s"/$name",
                 pathType = "Prefix",
                 backend = IngressBackendArgs(service =
-                  IngressServiceBackendArgs(name = name, port = ServiceBackendPortArgs(number = port))
+                  IngressServiceBackendArgs(
+                    name = name,
+                    port = ServiceBackendPortArgs(number = port)
+                  )
                 )
               )
             )
