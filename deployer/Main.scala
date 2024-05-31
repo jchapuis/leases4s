@@ -26,17 +26,6 @@ import java.io.File
       )
     )
   }
-  val troubleshooting: Output[Pod] =
-    Pod(
-      "troubleshooting",
-      PodArgs(spec =
-        PodSpecArgs(containers =
-          List(ContainerArgs(name = "netshoot", image = "nicolaka/netshoot:latest", command = List("sleep", "3600")))
-        )
-      )
-    )
 
-  Stack(serviceUser, bucket, siteUpload, serviceAccount, service, troubleshooting).exports(
-    websiteUrl = bucket.map(_.websiteEndpoint)
-  )
+  Stack(serviceUser, bucket, siteUpload, serviceAccount, service).exports(websiteUrl = bucket.map(_.websiteEndpoint))
 }
