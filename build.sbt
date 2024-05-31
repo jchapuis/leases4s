@@ -97,7 +97,9 @@ lazy val example = (project in file("example"))
       "org.scala-lang.modules" %% "scala-xml"           % "2.2.0",
       "org.jsoup"               % "jsoup"               % "1.17.2",
       "org.typelevel"          %% "log4cats-slf4j"      % "2.6.0",
-      "ch.qos.logback"          % "logback-classic"     % "1.5.2"
+      "ch.qos.logback"          % "logback-classic"     % "1.5.2",
+      "org.typelevel"          %% "munit-cats-effect-3" % "1.0.7"   % Test,
+      "org.http4s"             %% "http4s-ember-client" % "0.23.26" % Test
     )
   )
   .settings(run / fork := true, publish / skip := true)
