@@ -20,8 +20,13 @@ case class ServiceDeploymentArgs(
     env: List[EnvVarArgs] = List.empty
 )
 
-case class ServiceDeployment(service: Output[Service], deployment: Output[Deployment])(using ComponentBase)
-    extends ComponentResource derives RegistersOutputs
+case class ServiceDeployment(
+    service: Output[Service],
+    deployment: Output[Deployment],
+    ingresses: Output[List[Ingress]]
+)(using ComponentBase)
+    extends ComponentResource
+    derives RegistersOutputs
 
 def serviceDeployment(using Context)(
     name: NonEmptyString,
@@ -45,7 +50,7 @@ def serviceDeployment(using Context)(
       ports = deploymentPorts
     )
 
-    val deployment: Output[Deployment] = Deployment(
+    val deployment = Deployment(
       name,
       DeploymentArgs(
         spec = DeploymentSpecArgs(
@@ -71,7 +76,7 @@ def serviceDeployment(using Context)(
 
     val ingresses = args.ports.traverse(port => ingressFor(name, port))
 
-    ServiceDeployment(service, deployment)
+    ServiceDeployment(service, deployment, ingresses)
   }
 
 private def ingressFor(name: NonEmptyString, port: Int)(using Context): Output[Ingress] = Ingress(
