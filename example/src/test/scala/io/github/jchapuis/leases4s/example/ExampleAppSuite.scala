@@ -17,4 +17,5 @@ class ExampleAppSuite extends munit.CatsEffectSuite {
 
   test("uploading multiple files at once still leads to consistent index page") {}
 
+  override def munitFixtures: Seq[Fixture[?]] = List(httpClient)
 }
