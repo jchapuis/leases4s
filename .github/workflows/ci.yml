@@ -35,9 +35,9 @@ jobs:
         run: pulumi plugin install language scala 0.3.1 --server github://api.github.com/VirtusLab/besom
       - name: "Install pulumilocal (wrapper script for pulumi using AWS LocalStack)"
         run: pip install pulumi-local
-      - name: "Deploy example"
+      - name: "Deploy example app"
         run: cd deployer; pulumi login --local; export PULUMI_CONFIG_PASSPHRASE=foobar; pulumi stack init example; pulumilocal up --stack example --yes
-      - name: "Run tests of example app"
+      - name: "Test example app"
         run: sbt "project example" coverage test coverageReport
       - name: "Coverage aggregate"
         run: sbt coverageAggregate
