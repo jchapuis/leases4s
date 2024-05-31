@@ -25,8 +25,8 @@ jobs:
         with:
           jvm: temurin:17
           apps: sbt
-      - name: "Compile and unit test"
-        run: sbt + compile coverage test coverageReport versionPolicyCheck
+      - name: "Compile and unit test libraries"
+        run: sbt +  versionPolicyCheck compile coverage "project core" test coverageReport "project patterns" test coverageReport
       - name: "Build docker example image"
         run: sbt "project example" jibDockerBuild
       - name: "Import example docker image in k3d"
