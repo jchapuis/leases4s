@@ -1,6 +1,5 @@
 import besom.*
-import besom.api.kubernetes.core.v1.{Pod, PodArgs}
-import besom.api.kubernetes.core.v1.inputs.{ContainerArgs, EnvVarArgs, PodSpecArgs}
+import besom.api.kubernetes.core.v1.inputs.EnvVarArgs
 import besom.types.Output
 import io.github.jchapuis.leases4s.example.deployer.*
 
