@@ -36,7 +36,7 @@ jobs:
       - name: "Install pulumilocal (wrapper script for pulumi using AWS LocalStack)"
         run: pip install pulumi-local
       - name: "Deploy example app"
-        run: cd deployer; pulumi login --local; export PULUMI_CONFIG_PASSPHRASE=foobar; pulumi stack init example; pulumilocal up --stack example --yes --verbose 10 --emoji --logtostderr --logflow
+        run: cd deployer; pulumi login --local; export PULUMI_CONFIG_PASSPHRASE=foobar; pulumi stack init example; pulumilocal up --stack example --yes --verbose --emoji --logtostderr --logflow
       - name: "Test example app"
         run: sbt "project example" coverage test coverageReport
       - name: "Coverage aggregate"
