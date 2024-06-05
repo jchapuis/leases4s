@@ -16,8 +16,8 @@ private[impl] final case class Topics[F[_]](
 private[impl] object Topics {
   def resource[F[_]: Concurrent]: Resource[F, Topics[F]] =
     for {
-      watcher <- Topic[F, LeaseDataEvent].toResource
-      events <- Topic[F, LeaseEvent[F]].toResource
+      watcher           <- Topic[F, LeaseDataEvent].toResource
+      events            <- Topic[F, LeaseEvent[F]].toResource
       kubeLeaseAcquired <- Topic[F, KubeLease[F]].toResource
     } yield new Topics(watcher, events, kubeLeaseAcquired)
 }

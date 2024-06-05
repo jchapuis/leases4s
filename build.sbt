@@ -59,13 +59,14 @@ lazy val core = (project in file("core"))
   .settings(
     libraryDependencies ++= Seq(
       "com.goyeau"    %% "kubernetes-client"   % "0.11.0",
-      "org.typelevel" %% "log4cats-core"       % "2.6.0",
-      "org.typelevel" %% "literally"           % "1.1.0",
-      "org.scalameta" %% "munit"               % "1.0.0-M8" % Test,
-      "org.typelevel" %% "munit-cats-effect"   % "2.0.0-M3" % Test,
-      "org.typelevel" %% "cats-effect-testkit" % "3.5.1"    % Test,
-      "org.typelevel" %% "log4cats-slf4j"      % "2.6.0"    % Test,
-      "ch.qos.logback" % "logback-classic"     % "1.4.14"   % Test
+      "org.typelevel" %% "log4cats-core"       % "2.7.0",
+      "org.typelevel" %% "literally"           % "1.2.0",
+      "co.fs2"        %% "fs2-core"            % "3.10.2",
+      "org.scalameta" %% "munit"               % "1.0.0" % Test,
+      "org.typelevel" %% "munit-cats-effect"   % "2.0.0" % Test,
+      "org.typelevel" %% "cats-effect-testkit" % "3.5.1" % Test,
+      "org.typelevel" %% "log4cats-slf4j"      % "2.7.0" % Test,
+      "ch.qos.logback" % "logback-classic"     % "1.5.6" % Test
     )
   )
 
@@ -74,9 +75,9 @@ lazy val patterns = (project in file("patterns"))
   .settings(name := "leases4s-patterns")
   .settings(
     libraryDependencies ++= Seq(
-      "org.scalameta" %% "munit"               % "1.0.0-M8" % Test,
-      "org.typelevel" %% "munit-cats-effect"   % "2.0.0-M3" % Test,
-      "org.typelevel" %% "cats-effect-testkit" % "3.5.1"    % Test
+      "org.scalameta" %% "munit"               % "1.0.0" % Test,
+      "org.typelevel" %% "munit-cats-effect"   % "2.0.0" % Test,
+      "org.typelevel" %% "cats-effect-testkit" % "3.5.1" % Test
     )
   )
   .dependsOn(core % "compile->compile;test->test")
@@ -88,18 +89,18 @@ lazy val example = (project in file("example"))
   .dependsOn(core)
   .settings(
     libraryDependencies ++= Seq(
-      "org.http4s"             %% "http4s-dsl"          % "0.23.26",
-      "org.http4s"             %% "http4s-circe"        % "0.23.26",
-      "org.http4s"             %% "http4s-ember-server" % "0.23.26",
-      "io.circe"               %% "circe-generic"       % "0.14.6",
+      "org.http4s"             %% "http4s-dsl"          % "0.23.27",
+      "org.http4s"             %% "http4s-circe"        % "0.23.27",
+      "org.http4s"             %% "http4s-ember-server" % "0.23.27",
+      "io.circe"               %% "circe-generic"       % "0.14.7",
       "software.amazon.awssdk"  % "s3"                  % "2.25.27",
       "com.lihaoyi"            %% "scalatags"           % "0.12.0",
-      "org.scala-lang.modules" %% "scala-xml"           % "2.2.0",
+      "org.scala-lang.modules" %% "scala-xml"           % "2.3.0",
       "org.jsoup"               % "jsoup"               % "1.17.2",
-      "org.typelevel"          %% "log4cats-slf4j"      % "2.6.0",
-      "ch.qos.logback"          % "logback-classic"     % "1.5.2",
+      "org.typelevel"          %% "log4cats-slf4j"      % "2.7.0",
+      "ch.qos.logback"          % "logback-classic"     % "1.5.6",
       "org.typelevel"          %% "munit-cats-effect-3" % "1.0.7"   % Test,
-      "org.http4s"             %% "http4s-ember-client" % "0.23.26" % Test
+      "org.http4s"             %% "http4s-ember-client" % "0.23.27" % Test
     )
   )
   .settings(run / fork := true, publish / skip := true)
