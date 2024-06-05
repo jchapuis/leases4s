@@ -13,7 +13,7 @@ import cats.syntax.flatMap.*
 import cats.syntax.functor.*
 import cats.syntax.show.*
 import cats.{Applicative, MonadError}
-import com.goyeau.kubernetes.client.{EventType, KubernetesClient, WatchEvent}
+import com.goyeau.kubernetes.client.KubernetesClient
 import fs2.concurrent.Topic
 import io.github.jchapuis.leases4s.LeaseRepository.{LeaseEvent, LeaseParameters}
 import io.github.jchapuis.leases4s.impl.AutoUpdatingLeaseMap.LeaseMap
@@ -21,17 +21,16 @@ import io.github.jchapuis.leases4s.impl.K8sHelpers.*
 import io.github.jchapuis.leases4s.impl.RetryHelpers.*
 import io.github.jchapuis.leases4s.model.*
 import io.github.jchapuis.leases4s.{HeldLease, Lease, LeaseRepository}
-import io.k8s.api.coordination.v1
 import org.typelevel.log4cats.Logger
 
-class KubeLeaseRepository[F[_]: Async: Random: Logger](
+private[impl] class KubeLeaseRepository[F[_]: Async: Random: Logger](
     val labels: List[Label],
     leaseMap: LeaseMap[F],
     eventsTopic: Topic[F, LeaseEvent[F]],
     leaseAcquiredTopic: Topic[F, KubeLease[F]]
 )(implicit parameters: LeaseParameters, kubeApi: KubeApi[F])
     extends LeaseRepository[F] {
-  private val api = kubeApi.leasesApi
+  private val api       = kubeApi.leasesApi
   private lazy val unit = Applicative[F].unit
 
   def acquire(id: LeaseID, holder: HolderID, annotations: List[Annotation])(implicit
@@ -78,7 +77,7 @@ class KubeLeaseRepository[F[_]: Async: Random: Logger](
 
   private def renewLease(lease: KubeLease[F]) =
     for {
-      now <- Clock[F].realTimeInstant
+      now  <- Clock[F].realTimeInstant
       data <- lease.data.get
       renewedData = data.copy(duration = parameters.leaseDuration, lastRenewTime = Some(now))
       status <- api.createOrUpdate(k8sLeaseFromData(lease.id, renewedData))
@@ -106,8 +105,7 @@ class KubeLeaseRepository[F[_]: Async: Random: Logger](
       .map(_ === claimant)
       .ifM(
         ifTrue = for {
-          _ <- Logger[F]
-            .debug(show"Lease ${existingLease.id} is (or was) already held by $claimant, renewing it")
+          _ <- Logger[F].debug(show"Lease ${existingLease.id} is (or was) already held by $claimant, renewing it")
           _ <- renewLease(existingLease)
         } yield existingLease,
         ifFalse = for {
@@ -119,16 +117,16 @@ class KubeLeaseRepository[F[_]: Async: Random: Logger](
             .debug(
               show"Lease ${existingLease.id} that was held by $existingHolder has expired, cleaning it up and attempting to recreate it"
             )
-          _ <- existingLease.delete
+          _     <- existingLease.delete
           lease <- createLease(existingLease.id, claimant, annotations)
         } yield lease
       )
 
   private def createLease(id: LeaseID, holderID: HolderID, annotations: List[Annotation]): F[KubeLease[F]] =
     (for {
-      _ <- OptionT.liftF(Logger[F].debug(show"Attempting to create lease $id for $holderID"))
+      _                    <- OptionT.liftF(Logger[F].debug(show"Attempting to create lease $id for $holderID"))
       deferredCreatedLease <- OptionT.liftF(Deferred[F, Option[KubeLease[F]]])
-      _ <- OptionT.liftF(nextAcquiredLeaseFor(id, holderID).flatTap(deferredCreatedLease.complete).start)
+      _   <- OptionT.liftF(nextAcquiredLeaseFor(id, holderID).flatTap(deferredCreatedLease.complete).start)
       now <- OptionT.liftF(Clock[F].realTimeInstant)
       status <- OptionT.liftF(
         api.createOrUpdate(k8sLease(id, holderID, labels, annotations, now, parameters.leaseDuration))
@@ -166,34 +164,15 @@ object KubeLeaseRepository {
       namespace: Namespace,
       parameters: LeaseParameters
   ): Resource[F, LeaseRepository[F]] = {
-    val labels = label :: others.toList
-    val labelMap = labels.map(l => l.key.value -> l.value.value).toMap
+    val labels                   = label :: others.toList
     implicit val api: KubeApi[F] = new KubeApi[F](client, namespace)
-    Random.scalaUtilRandom[F].toResource.flatMap { implicit random: Random[F] =>
+    Random.scalaUtilRandom[F].toResource.flatMap { r =>
+      implicit val random: Random[F] = r
       for {
-        leaseList <- api.leasesApi.list(labelMap).toResource
-        topics <- Topics.resource
-        leaseMap <- AutoUpdatingLeaseMap(leaseList, topics)
-        listRevision = leaseList.metadata.flatMap(_.resourceVersion)
-        eventsStream = streamFrom(api.leasesApi.watch(labelMap, listRevision))
-        _ <- Resource.make(eventsStream.broadcastThrough(topics.watcher.publish).compile.drain.start)(_.cancel)
+        topics   <- Topics.resource
+        leaseMap <- AutoUpdatingLeaseMap(topics, labels)
       } yield new KubeLeaseRepository[F](labels, leaseMap, topics.events, topics.leaseAcquired)
     }
   }
-
-  private def streamFrom[F[_]: Async: Logger](stream: fs2.Stream[F, Either[String, WatchEvent[v1.Lease]]]) = stream
-    .evalTap(
-      _.fold(
-        error => Logger[F].error(show"Error watching api: $error"),
-        event =>
-          Logger[F].debug(
-            s"Received event for ${event.`object`.metadata.flatMap(_.name).getOrElse("unknown")}: ${EventType
-              .encodeEventType(event.`type`)
-              .toString()}"
-          )
-      )
-    )
-    .map(_.toOption.flatMap(leaseEventFromV1))
-    .collect { case Some(event) => event }
 
 }

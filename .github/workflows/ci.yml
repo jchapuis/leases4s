@@ -5,17 +5,41 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: AbsaOSS/k3d-action@v2
-        name: "Create Kube Cluster"
+      - name: "Create Kube Cluster"
+        uses: AbsaOSS/k3d-action@v2
         with:
           cluster-name: "local"
-      - uses: actions/checkout@v3
+          args: >-
+            -p "8080:80@loadbalancer"
+      - name: Start AWS LocalStack
+        uses: LocalStack/setup-localstack@main
+        with:
+          image-tag: 'latest'
+          install-awslocal: 'true'
+      - name: "Checkout"
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: coursier/setup-action@v1.3.3
+      - name: "Setup Coursier"
+        uses: coursier/setup-action@v1.3.3
         with:
           jvm: temurin:17
           apps: sbt
-      - run: sbt + compile coverage test coverageReport coverageAggregate versionPolicyCheck
-      - uses: codecov/codecov-action@v3
-
+      - name: "Compile and unit test libraries"
+        run: sbt +  versionPolicyCheck compile coverage "project core" test coverageReport "project patterns" test coverageReport
+      - name: "Build docker example image"
+        run: sbt "project example" jibDockerBuild
+      - name: "Import example docker image in k3d"
+        run: k3d image import localhost/io.github.jchapuis/leases4s-example:local -c local
+      - name: "Install besom plugin"
+        run: pulumi plugin install language scala 0.3.1 --server github://api.github.com/VirtusLab/besom
+      - name: "Install pulumilocal (wrapper script for pulumi using AWS LocalStack)"
+        run: pip install pulumi-local
+      - name: "Deploy example app"
+        run: cd deployer; pulumi login --local; export PULUMI_CONFIG_PASSPHRASE=foobar; pulumi stack init example; pulumilocal up --stack example --yes --emoji --logtostderr --logflow
+      - name: "Test example app"
+        run: sbt "project example" coverage test coverageReport
+      - name: "Coverage aggregate"
+        run: sbt coverageAggregate
+      - name: "Upload coverage"
+        uses: codecov/codecov-action@v3

@@ -5,17 +5,16 @@ import io.github.jchapuis.leases4s.impl.model.{LeaseData, LeaseDataEvent, Versio
 import io.github.jchapuis.leases4s.model.*
 import io.k8s.api.coordination.v1
 import io.k8s.apimachinery.pkg.apis.meta.v1.{MicroTime, ObjectMeta}
-
 import java.time.Instant
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 object K8sHelpers {
   def leaseEventFromV1(event: WatchEvent[v1.Lease]): Option[LeaseDataEvent] = event.`type` match {
     case EventType.ADDED =>
-      leaseIDFromK8s(event.`object`).zip(leaseDataFromK8s(event.`object`)).map(LeaseDataEvent.Added.tupled)
-    case EventType.DELETED => leaseIDFromK8s(event.`object`).map(LeaseDataEvent.Deleted)
+      leaseIDFromK8s(event.`object`).zip(leaseDataFromK8s(event.`object`)).map(LeaseDataEvent.Added.apply.tupled)
+    case EventType.DELETED => leaseIDFromK8s(event.`object`).map(LeaseDataEvent.Deleted.apply)
     case EventType.MODIFIED =>
-      leaseIDFromK8s(event.`object`).zip(leaseDataFromK8s(event.`object`)).map(LeaseDataEvent.Modified.tupled)
+      leaseIDFromK8s(event.`object`).zip(leaseDataFromK8s(event.`object`)).map(LeaseDataEvent.Modified.apply.tupled)
     case EventType.ERROR => None
   }
 
@@ -46,8 +45,8 @@ object K8sHelpers {
     labels <- lease.metadata
       .flatMap(_.labels)
       .map(_.toList.flatMap { case (key, value) => io.github.jchapuis.leases4s.model.Label(key, value) })
-    version <- lease.metadata.flatMap(_.resourceVersion).map(Version(_))
-    duration <- lease.spec.flatMap(_.leaseDurationSeconds).map(_.seconds)
+    version     <- lease.metadata.flatMap(_.resourceVersion).map(Version(_))
+    duration    <- lease.spec.flatMap(_.leaseDurationSeconds).map(_.seconds)
     acquireTime <- lease.spec.flatMap(_.acquireTime).map(_.value).map(Instant.parse)
     renewTime = lease.spec.flatMap(_.renewTime).map(_.value).map(Instant.parse)
     annotations = lease.metadata
@@ -57,6 +56,7 @@ object K8sHelpers {
       .flatten
   } yield LeaseData(holder, labels, annotations, version, duration, acquireTime, renewTime)
 
+  @SuppressWarnings(Array("org.wartremover.warts.ToString"))
   private def v1LeaseFor(
       id: LeaseID,
       holderID: HolderID,
