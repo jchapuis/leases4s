@@ -22,7 +22,7 @@ class ExampleAppSuite extends munit.CatsEffectSuite {
   override val munitTimeout = Duration(3, "m")
   private val httpClient    = ResourceSuiteLocalFixture("client", EmberClientBuilder.default[IO].build)
   private val baseS3Uri     = uri"https://s3-website-bucket.s3-website.localhost.localstack.cloud:4566/"
-  private val baseAppUri    = uri"http://localhost:8080"
+  private val baseAppUri    = uri"http://0.0.0.0:8080"
 
   test("index page is available") {
     for {
