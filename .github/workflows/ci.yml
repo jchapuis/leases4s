@@ -15,7 +15,7 @@ jobs:
         uses: dashanji/kubernetes-log-export-action@v6
         env:
           SHOW_TIMESTAMPS: 'true'
-          OUTPUT_DIR: ${{ github.workspace }}/logs
+          OUTPUT_DIR: logs
           NAMESPACES: "default"
           MODE: start
       - name: Start AWS LocalStack
@@ -57,7 +57,7 @@ jobs:
         if: always()
         env:
           SHOW_TIMESTAMPS: 'true'
-          OUTPUT_DIR: ${{ github.workspace }}/logs
+          OUTPUT_DIR: logs
           NAMESPACES: "default"
           MODE: stop
           WITH_STOAT: 'true'
