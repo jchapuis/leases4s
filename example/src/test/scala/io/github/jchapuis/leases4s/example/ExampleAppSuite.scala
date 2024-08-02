@@ -1,30 +1,37 @@
 package io.github.jchapuis.leases4s.example
 
 import cats.effect.IO
+import cats.syntax.parallel.*
+import fs2.io.file.Files
+import io.github.jchapuis.leases4s.example.services.IndexPage
+import org.http4s.Header.*
 import org.http4s.ember.client.EmberClientBuilder
+import org.http4s.headers.`Content-Type`
 import org.http4s.implicits.*
 import org.http4s.multipart.*
-import fs2.io.file.Files
-import cats.syntax.parallel.*
-import io.github.jchapuis.leases4s.example.services.IndexPage
-
-import java.nio.file.Paths
-import org.http4s.Header.*
-import org.http4s.{MediaType, Method, Request}
-import org.http4s.headers.`Content-Type`
 import org.http4s.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
+import java.nio.file.Paths
+import scala.concurrent.duration.{Duration, DurationInt}
 import scala.jdk.CollectionConverters.*
-import scala.concurrent.duration.Duration
 
 class ExampleAppSuite extends munit.CatsEffectSuite {
   override val munitTimeout = Duration(3, "m")
-  private val httpClient    = ResourceSuiteLocalFixture("client", EmberClientBuilder.default[IO].build)
-  private val baseS3Uri     = uri"https://s3-website-bucket.s3-website.localhost.localstack.cloud:4566/"
-  private val baseAppUri    = uri"http://0.0.0.0:8080"
+  private val httpClient =
+    ResourceSuiteLocalFixture(
+      "client",
+      EmberClientBuilder
+        .default[IO]
+        .withTimeout(30.seconds)
+        .withLogger(Slf4jLogger.getLogger[IO])
+        .build
+    )
+  private val baseS3Uri  = uri"https://s3-website-bucket.s3-website.localhost.localstack.cloud:4566/"
+  private val baseAppUri = uri"http://0.0.0.0:8080"
 
   test("index page is available") {
     for {
@@ -33,7 +40,7 @@ class ExampleAppSuite extends munit.CatsEffectSuite {
     } yield assert(status.isSuccess)
   }
 
-  test("uploading all books in resources folder") {
+  test("uploading all books in resources folder in parallel") {
     for {
       client     <- IO(httpClient())
       multiparts <- Multiparts.forSync[IO]
