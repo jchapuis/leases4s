@@ -10,7 +10,6 @@ jobs:
         with:
           image-tag: 'latest'
           install-awslocal: 'true'
-          configuration: DEBUG=1
       - name: "Create Kube Cluster"
         uses: AbsaOSS/k3d-action@v2.4.0
         with:
@@ -27,7 +26,7 @@ jobs:
           jvm: temurin:17
           apps: sbt
       - name: "Compile and unit test libraries"
-        run: sbt +  versionPolicyCheck compile coverage "project core" test coverageReport "project patterns" test coverageReport
+        run: sbt + versionPolicyCheck compile coverage "project core" test coverageReport "project patterns" test coverageReport
       - name: "Build docker example image"
         run: sbt "project example" jibDockerBuild
       - name: "Sleep for a bit for docker registry to be ready"

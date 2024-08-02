@@ -27,7 +27,7 @@ import software.amazon.awssdk.services.s3.{S3AsyncClient, S3Configuration}
 import java.net.URI
 
 object ExampleApp extends IOApp {
-  val localStackEndpoint = "http://host.k3d.internal:4566";
+  val localStackEndpoint = "https://host.k3d.internal:4566";
   given S3AsyncClient =
     S3AsyncClient
       .builder()
