@@ -10,7 +10,7 @@ jobs:
         with:
           image-tag: 'latest'
           install-awslocal: 'true'
-          skip-ephemeral-stop: 'true'
+          configuration: DEBUG=1
       - name: "Create Kube Cluster"
         uses: AbsaOSS/k3d-action@v2.4.0
         with:
