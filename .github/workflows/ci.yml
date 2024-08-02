@@ -5,17 +5,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Start AWS LocalStack
+        uses: LocalStack/setup-localstack@0.2.2
+        with:
+          image-tag: 'latest'
+          install-awslocal: 'true'
       - name: "Create Kube Cluster"
         uses: AbsaOSS/k3d-action@v2.4.0
         with:
           cluster-name: "local"
           args: >-
             -p "8080:80@loadbalancer"
-      - name: Start AWS LocalStack
-        uses: LocalStack/setup-localstack@v0.1.2
-        with:
-          image-tag: '3.4.0'
-          install-awslocal: 'true'
       - name: "Checkout"
         uses: actions/checkout@v3
         with:
@@ -48,3 +48,6 @@ jobs:
       - name: Dump Kubernetes Logs
         if: always()
         run: kubectl logs -l app=uploads --all-containers=true --tail=-1
+      - name: Dump LocalStack Logs
+        if: always()
+        run: localstack logs
