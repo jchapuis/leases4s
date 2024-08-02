@@ -8,9 +8,7 @@ jobs:
       - name: Start AWS LocalStack
         uses: LocalStack/setup-localstack@v0.2.2
         with:
-          image-tag: 'latest'
-          install-awslocal: 'true'
-          configuration: DEBUG=1,GATEWAY_LISTEN="127.0.0.1:4566"
+          image-tag: '3.2.0'
       - name: "Create Kube Cluster"
         uses: AbsaOSS/k3d-action@v2.4.0
         with:
