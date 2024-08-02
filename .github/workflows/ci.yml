@@ -46,8 +46,6 @@ jobs:
         run: pip install pulumi-local
       - name: "Deploy example app"
         run: cd deployer; pulumi login --local; export PULUMI_CONFIG_PASSPHRASE=foobar; pulumi stack init example; pulumilocal up --stack example --yes --emoji --logtostderr --logflow
-      - name: "Sleep for a bit for the application to be ready"
-        run: sleep 30
       - name: "Test example app"
         run: sbt "project example" coverage test coverageReport
       - name: "Coverage aggregate"
@@ -62,6 +60,7 @@ jobs:
           OUTPUT_DIR: ${{ github.workspace }}/logs
           NAMESPACES: "default"
           MODE: stop
+          WITH_STOAT: 'true'
       - name: Run Stoat Action
         uses: stoat-dev/stoat-action@v0
         if: always()
