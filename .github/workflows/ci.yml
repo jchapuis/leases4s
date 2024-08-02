@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       localstack:
-        image: localstack/localstack:s3-latest
+        image: localstack/localstack:latest
         ports:
           - 4566:4566
     steps:
