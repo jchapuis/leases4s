@@ -48,6 +48,3 @@ jobs:
       - name: Dump Kubernetes Logs
         if: always()
         run: kubectl logs -l app=uploads --all-containers=true --tail=-1
-      - name: Dump LocalStack Logs
-        if: always()
-        run: localstack logs
