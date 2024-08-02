@@ -14,7 +14,7 @@ jobs:
       - name: Start AWS LocalStack
         uses: LocalStack/setup-localstack@v0.1.2
         with:
-          image-tag: 'latest'
+          image-tag: '3.4.0'
           install-awslocal: 'true'
       - name: "Checkout"
         uses: actions/checkout@v3
