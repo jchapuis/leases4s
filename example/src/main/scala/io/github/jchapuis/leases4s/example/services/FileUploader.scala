@@ -43,10 +43,11 @@ class FileUploader(bucket: String)(using
     val newIndexByName        = IndexPage.render(IndexPage.Sorting.Name, newFiles)
     val newIndexByDescription = IndexPage.render(IndexPage.Sorting.Description, newFiles)
     val newIndexByWordCount   = IndexPage.render(IndexPage.Sorting.WordCount, newFiles)
+    val mimeType              = "text/html"
     (
-      uploadFileStream(newIndexByName, IndexPage.indexByNamePage, "text/html"),
-      uploadFileStream(newIndexByDescription, IndexPage.indexByDescriptionPage, "text/html"),
-      uploadFileStream(newIndexByWordCount, IndexPage.indexByWordCountPage, "text/html")
+      uploadFileStream(newIndexByName, IndexPage.indexByNamePage, mimeType),
+      uploadFileStream(newIndexByDescription, IndexPage.indexByDescriptionPage, mimeType),
+      uploadFileStream(newIndexByWordCount, IndexPage.indexByWordCountPage, mimeType)
     ).parTupled.void
   }
 

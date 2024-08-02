@@ -6,6 +6,7 @@ import org.http4s.implicits.*
 import org.http4s.multipart.*
 import fs2.io.file.Files
 import cats.syntax.parallel.*
+import io.github.jchapuis.leases4s.example.services.IndexPage
 
 import java.nio.file.Paths
 import org.http4s.Header.*
@@ -15,6 +16,7 @@ import org.http4s.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
+
 import scala.jdk.CollectionConverters.*
 import scala.concurrent.duration.Duration
 
@@ -61,8 +63,8 @@ class ExampleAppSuite extends munit.CatsEffectSuite {
   test("index.html and index-by-word-count.html have books sorted in the right order") {
     for {
       client               <- IO(httpClient())
-      indexHtml            <- client.expect[String](baseS3Uri / "index.html")
-      indexByWordCountHtml <- client.expect[String](baseS3Uri / "index-by-word-count.html")
+      indexHtml            <- client.expect[String](baseS3Uri / IndexPage.indexByNamePage)
+      indexByWordCountHtml <- client.expect[String](baseS3Uri / IndexPage.indexByWordCountPage)
       bookNames  = parseTableColumnFrom(indexHtml, 0)
       wordCounts = parseTableColumnFrom(indexByWordCountHtml, 2).map(_.toInt)
     } yield {
