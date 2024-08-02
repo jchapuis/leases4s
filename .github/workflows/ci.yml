@@ -12,7 +12,7 @@ jobs:
           args: >-
             -p "8080:80@loadbalancer"
       - name: Start AWS LocalStack
-        uses: LocalStack/setup-localstack@v0.2.2
+        uses: LocalStack/setup-localstack@v0.1.2
         with:
           image-tag: 'latest'
           install-awslocal: 'true'
