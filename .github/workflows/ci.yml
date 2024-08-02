@@ -4,11 +4,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    services:
+      localstack:
+        image: localstack/localstack:s3-latest
+        ports:
+          - 4566:4566
     steps:
-      - name: Start AWS LocalStack
-        uses: LocalStack/setup-localstack@v0.1.2
-        with:
-          image-tag: '3.2.0'
       - name: "Create Kube Cluster"
         uses: AbsaOSS/k3d-action@v2.4.0
         with:
