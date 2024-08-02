@@ -29,10 +29,12 @@ jobs:
         run: sbt +  versionPolicyCheck compile coverage "project core" test coverageReport "project patterns" test coverageReport
       - name: "Build docker example image"
         run: sbt "project example" jibDockerBuild
+      - name: "Sleep for a bit for docker registry to be ready"
+        run: sleep 10
       - name: "Import example docker image in k3d"
         run: k3d image import localhost/io.github.jchapuis/leases4s-example:local -c local
       - name: "Install besom plugin"
-        run: pulumi plugin install language scala 0.3.1 --server github://api.github.com/VirtusLab/besom
+        run: pulumi plugin install language scala 0.3.2 --server github://api.github.com/VirtusLab/besom
       - name: "Install pulumilocal (wrapper script for pulumi using AWS LocalStack)"
         run: pip install pulumi-local
       - name: "Deploy example app"
