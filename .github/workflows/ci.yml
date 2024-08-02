@@ -50,7 +50,7 @@ jobs:
         if: always()
         with:
           show_timestamps: 'true'
-          output_dir: ./output
+          output_dir: "./output"
       - name: Run Stoat Action
         uses: stoat-dev/stoat-action@v0
         if: always()
