@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Start AWS LocalStack
-        uses: LocalStack/setup-localstack@0.2.2
+        uses: LocalStack/setup-localstack@v0.2.2
         with:
           image-tag: 'latest'
           install-awslocal: 'true'
