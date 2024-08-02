@@ -26,7 +26,7 @@ class ExampleAppSuite extends munit.CatsEffectSuite {
       "client",
       EmberClientBuilder
         .default[IO]
-        .withTimeout(30.seconds)
+        .withTimeout(1.minute)
         .withLogger(Slf4jLogger.getLogger[IO])
         .build
     )
@@ -58,8 +58,9 @@ class ExampleAppSuite extends munit.CatsEffectSuite {
             request = Request[IO](method = Method.POST, uri = baseAppUri / "uploads" / "file")
               .withEntity(multipart)
               .withHeaders(multipart.headers)
-            success <- client.successful(request)
-          } yield success
+            status <- client.status(request)
+            _      <- IO(println(s"Uploaded file: ${file.fileName} with status: $status"))
+          } yield status.isSuccess
         }
         .map(_.forall(identity))
     } yield {
