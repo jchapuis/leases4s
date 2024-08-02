@@ -6,5 +6,5 @@ plugins:
     kube_logs:
       metadata:
         name: "Kubernetes Logs"
-      path: kube-logs-output
+      path: logs
       file_viewer: true

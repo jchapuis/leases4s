@@ -46,11 +46,8 @@ jobs:
       - name: "Upload coverage"
         uses: codecov/codecov-action@v3
       - name: Dump Kubernetes Logs
-        uses: dashanji/kubernetes-log-export-action@v1
+        uses: dashanji/kubernetes-log-export-action@v6
         if: always()
-        with:
-          show_timestamps: 'true'
-          output_dir: "./output"
       - name: Run Stoat Action
         uses: stoat-dev/stoat-action@v0
         if: always()
