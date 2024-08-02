@@ -11,13 +11,6 @@ jobs:
           cluster-name: "local"
           args: >-
             -p "8080:80@loadbalancer"
-      - name: Start Kubernetes Logs
-        uses: dashanji/kubernetes-log-export-action@v6
-        env:
-          SHOW_TIMESTAMPS: 'true'
-          OUTPUT_DIR: logs
-          NAMESPACES: "default"
-          MODE: start
       - name: Start AWS LocalStack
         uses: LocalStack/setup-localstack@main
         with:
@@ -53,14 +46,5 @@ jobs:
       - name: "Upload coverage"
         uses: codecov/codecov-action@v3
       - name: Dump Kubernetes Logs
-        uses: dashanji/kubernetes-log-export-action@v6
         if: always()
-        env:
-          SHOW_TIMESTAMPS: 'true'
-          OUTPUT_DIR: logs
-          NAMESPACES: "default"
-          MODE: stop
-          WITH_STOAT: 'true'
-      - name: Run Stoat Action
-        uses: stoat-dev/stoat-action@v0
-        if: always()
+        run: kubectl logs -l app=uploads --all-containers=true --tail=-1
