@@ -1,5 +1,3 @@
-import sbtversionpolicy.Compatibility.BinaryAndSourceCompatible
-
 val scala213 = "2.13.11"
 val scala3   = "3.3.1"
 
@@ -14,9 +12,10 @@ val commonSettings = Seq(
     Wart.ImplicitConversion,
     Wart.Overloading
   ),
-  scalaVersion       := scala3,
-  crossScalaVersions := Seq(scala213, scala3),
-  versionPolicyCheck := false,
+  scalaVersion              := scala3,
+  crossScalaVersions        := Seq(scala213, scala3),
+  versionPolicyCheck / skip := true, // Disable for first release
+  versionCheck / skip       := true,
   Compile / scalacOptions ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, _)) => Seq("-Xsource:3", "-Xlint:unused")
@@ -44,7 +43,7 @@ inThisBuild(
     sonatypeProjectHosting := Some(
       xerial.sbt.Sonatype.GitHubHosting("jchapuis", "leases4s", "me@jonaschapuis.com")
     ),
-    versionPolicyIntention := Compatibility.None,
+    versionPolicyIntention := Compatibility.BinaryAndSourceCompatible,
     versionScheme          := Some("early-semver"),
     versionPolicyIgnoredInternalDependencyVersions := Some(
       "^\\d+\\.\\d+\\.\\d+\\+\\d+".r
