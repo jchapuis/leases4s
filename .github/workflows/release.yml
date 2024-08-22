@@ -7,7 +7,7 @@ on:
 
 jobs:
   coverage:
-    uses: ./.github/workflows/ci.yml
+    uses: ./.github/workflows/build.yml
     name: "Coverage"
 
   publish:
