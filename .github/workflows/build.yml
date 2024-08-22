@@ -1,0 +1,54 @@
+name: Build
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      localstack:
+        image: localstack/localstack:latest
+        ports:
+          - 4566:4566
+    steps:
+      - name: "Create Kube Cluster"
+        uses: AbsaOSS/k3d-action@v2.4.0
+        with:
+          cluster-name: "local"
+          args: >-
+            -p "8080:80@loadbalancer"
+      - name: "Checkout"
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: "Setup Coursier"
+        uses: coursier/setup-action@v1.3.3
+        with:
+          jvm: temurin:17
+          apps: sbt
+      - name: "Compile and unit test libraries"
+        run: sbt + versionPolicyCheck compile coverage "project core" test coverageReport "project patterns" test coverageReport
+      - name: "Build docker example image"
+        run: sbt "project example" jibDockerBuild
+      - name: "Sleep for a bit for docker registry to be ready"
+        run: sleep 10
+      - name: "Import example docker image in k3d"
+        run: k3d image import localhost/io.github.jchapuis/leases4s-example:local -c local
+      - name: "Install besom plugin"
+        run: pulumi plugin install language scala 0.3.2 --server github://api.github.com/VirtusLab/besom
+      - name: "Install pulumilocal (wrapper script for pulumi using AWS LocalStack)"
+        run: pip install pulumi-local
+      - name: "Deploy example app"
+        run: cd deployer; pulumi login --local; export PULUMI_CONFIG_PASSPHRASE=foobar; pulumi stack init example; pulumilocal up --stack example --yes --emoji --logtostderr --logflow
+      - name: "Test example app"
+        run: sbt "project example" coverage test coverageReport
+      - name: "Coverage aggregate"
+        run: sbt coverageAggregate
+      - name: "Upload coverage"
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        uses: codecov/codecov-action@v3
+      - name: Dump Kubernetes Logs
+        if: always()
+        run: kubectl logs -l app=uploads --all-containers=true --tail=-1
