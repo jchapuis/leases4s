@@ -21,8 +21,6 @@ import io.github.jchapuis.leases4s.impl.K8sHelpers.*
 import io.github.jchapuis.leases4s.impl.RetryHelpers.*
 import io.github.jchapuis.leases4s.impl.model.{LeaseData, LeaseDataEvent}
 import io.github.jchapuis.leases4s.model.*
-import io.github.jchapuis.leases4s.LeaseRepository
-import io.k8s.api.coordination.v1
 import org.typelevel.log4cats.Logger
 import scala.jdk.DurationConverters.*
 
@@ -33,7 +31,7 @@ private[impl] class AutoUpdatingLeaseMap[F[_]: Temporal: Logger: Random](
 )(implicit kubeApi: KubeApi[F], parameters: LeaseParameters) {
   private val labelMap = labels.map(l => l.key.value -> l.value.value).toMap
   private type ResourceF[A] = Resource[F, A]
-  implicit val randomR: Random[ResourceF] = implicitly[Random[F]].mapK(Resource.liftK)
+  private implicit val randomR: Random[ResourceF] = implicitly[Random[F]].mapK(Resource.liftK)
 
   def start: Resource[F, Unit] = listAndWatch.retryWithBackoff(
     throwable =>
@@ -73,7 +71,7 @@ private[impl] class AutoUpdatingLeaseMap[F[_]: Temporal: Logger: Random](
           }
           fs2.Stream.eval(
             Logger[F].debug(
-              show"Refreshing watcher subscription from revision ${maybeLastSeenRevision.getOrElse("initial")} (trigger: $throwable)"
+              show"Refreshing watcher subscription from revision ${maybeLastSeenRevision.getOrElse[String]("initial")} (trigger: $throwable)"
             )
           ) >> watcherStream(maybeLastSeenRevision)
         case (_, Right(event)) =>
