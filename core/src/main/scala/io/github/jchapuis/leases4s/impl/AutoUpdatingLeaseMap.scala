@@ -39,7 +39,7 @@ private[impl] class AutoUpdatingLeaseMap[F[_]: Temporal: Logger: Random](
     throwable =>
       Logger[F]
         .warn(throwable)(
-          show"Auto-updating lease map flow failed, restarting it (events may have been lost in the meantime, but the list will be reset)"
+          "Auto-updating lease map flow failed, restarting it (events may have been lost in the meantime, but it's ok as list will be reset)"
         )
         .toResource,
     parameters.initialOnErrorRetryDelay
