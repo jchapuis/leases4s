@@ -7,22 +7,12 @@ on:
 
 jobs:
   coverage:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: coursier/setup-action@v1.3.3
-        with:
-          jvm: temurin:17
-          apps: sbt
-      - name: Test and compute coverage
-        run: sbt + coverage test coverageReport coverageAggregate
-      - name: Codecov
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        uses: codecov/codecov-action@v3
+    uses: ./.github/workflows/ci.yml
+    name: "Coverage"
 
   publish:
     runs-on: ubuntu-latest
+    name: "Publish"
     steps:
       - uses: actions/checkout@v3
         with:
@@ -37,4 +27,3 @@ jobs:
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-      - uses: codecov/codecov-action@v3

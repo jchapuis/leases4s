@@ -44,6 +44,8 @@ jobs:
       - name: "Coverage aggregate"
         run: sbt coverageAggregate
       - name: "Upload coverage"
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         uses: codecov/codecov-action@v3
       - name: Dump Kubernetes Logs
         if: always()
