@@ -1,0 +1,34 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam defaultFontName Chalkboard
+!pragma teoz true
+
+Alice -> Lease: POST
+activate Alice
+activate Lease
+hnote over Lease: acquireTime=1
+Bob -> Lease: POST
+activate Bob
+Bob <[#red]- Lease: 409 CONFLICT
+hnote over Bob: <&timer> wait until delete or expiry
+Alice <[#orange]-- Lease: holder=Alice, version=a
+&Bob <[#orange]-- Lease: holder=Alice, version=a
+...seconds later...
+Alice -> Lease: PATCH, version=a, lastRenewTime=2
+hnote over Lease: acquireTime=1, lastRenewTime=2
+Alice <[#orange]-- Lease: lastRenewTime=2, version=b
+&Bob <[#orange]-- Lease: lastRenewTime=2, version=b
+...seconds later...
+Alice -> Lease: DELETE, version=b
+deactivate Alice
+Alice <[#orange]-- Lease: deleted
+&Bob <[#orange]-- Lease: deleted
+destroy Lease
+Bob -> Lease: POST
+activate Lease
+hnote over Lease: acquireTime=1
+Alice <[#orange]-- Lease: holder=Bob, version=c
+&Bob <[#orange]-- Lease: holder=Bob, version=c
+...etc....
+@enduml
+

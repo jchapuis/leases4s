@@ -1,10 +1,20 @@
 # leases4s
+![logo](/doc/logo-title-small.png)
+
 [![Release](https://github.com/jchapuis/leases4s/actions/workflows/release.yml/badge.svg)](https://github.com/jchapuis/leases4s/actions/workflows/release.yml)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.jchapuis/leases4s_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.jchapuis/leases4s_2.13)
 [![codecov](https://codecov.io/gh/jchapuis/leases4s/branch/master/graph/badge.svg?token=BOAOIFC7BF)](https://codecov.io/gh/jchapuis/leases4s)
 <a href="https://typelevel.org/cats/"><img src="https://typelevel.org/cats/img/cats-badge.svg" height="40px" align="right" alt="Cats friendly" /></a>
 
 Tagless abstractions for leases in Kubernetes allowing for use cases such as distributed critical section, leader election, etc. 
+
+## Getting started
+
+Add the following dependency to your `build.sbt`:
+
+```scala
+libraryDependencies += "io.github.jchapuis" %% "leases4s-core" % "x.y.z" // latest from maven badge above
+```
 
 ## Abstractions
 As the library name suggests, the library is all about leases and everything revolves around these two main abstractions: 

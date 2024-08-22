@@ -1,0 +1,27 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam defaultFontName Chalkboard
+participant Alice
+participant Lease
+participant Bob
+!pragma teoz true
+
+note right of Lease: <&calendar> lease duration=10
+activate Alice
+activate Lease
+activate Bob
+hnote over Bob: wait until delete or expiry
+Alice -> Lease: PATCH\nrev=a, lastRenewTime=100
+Alice <[#orange]-- Lease
+&Bob <[#orange]-- Lease: holder=Alice, rev=b, lastRenewTime=100
+hnote over Alice: <color:red><&fire> crash<color:red> ︎
+destroy Alice
+hnote over Bob: <&timer> 10 elapsed <&arrow-thick-right> lease expired
+Bob -> Lease: DELETE, rev=b
+Bob <[#orange]-- Lease: deleted
+destroy Lease
+Bob -> Lease: POST
+activate Lease
+......
+@enduml
+

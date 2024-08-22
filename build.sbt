@@ -55,7 +55,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val core = (project in file("core"))
   .settings(commonSettings*)
-  .settings(name := "leases4s")
+  .settings(name := "leases4s-core")
   .settings(
     libraryDependencies ++= Seq(
       "com.goyeau"    %% "kubernetes-client"   % "0.11.0",
