@@ -82,8 +82,8 @@ lazy val patterns = (project in file("patterns"))
   .dependsOn(core % "compile->compile;test->test")
 
 lazy val example = (project in file("example"))
-  .settings(scalaVersion := scala3, crossScalaVersions := Nil)
   .settings(commonSettings*)
+  .settings(scalaVersion := scala3, crossScalaVersions := Nil)
   .settings(name := "leases4s-example")
   .dependsOn(core)
   .settings(
