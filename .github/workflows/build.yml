@@ -42,7 +42,7 @@ jobs:
       - name: "Deploy example app"
         run: cd deployer; pulumi login --local; export PULUMI_CONFIG_PASSPHRASE=foobar; pulumi stack init example; pulumilocal up --stack example --yes --emoji --logtostderr --logflow
       - name: "Test example app"
-        run: sbt "project example" coverage test coverageReport
+        run: sbt "project example" test
       - name: "Coverage aggregate"
         run: sbt coverageAggregate
       - name: "Upload coverage"
