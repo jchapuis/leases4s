@@ -65,7 +65,7 @@ lazy val core = (project in file("core"))
       "org.typelevel" %% "munit-cats-effect"   % "2.0.0" % Test,
       "org.typelevel" %% "cats-effect-testkit" % "3.5.4" % Test,
       "org.typelevel" %% "log4cats-slf4j"      % "2.7.0" % Test,
-      "ch.qos.logback" % "logback-classic"     % "1.5.6" % Test
+      "ch.qos.logback" % "logback-classic"     % "1.5.7" % Test
     )
   )
 
@@ -98,7 +98,7 @@ lazy val example = (project in file("example"))
       "org.scala-lang.modules" %% "scala-xml"           % "2.3.0",
       "org.jsoup"               % "jsoup"               % "1.18.1",
       "org.typelevel"          %% "log4cats-slf4j"      % "2.7.0",
-      "ch.qos.logback"          % "logback-classic"     % "1.5.6",
+      "ch.qos.logback"          % "logback-classic"     % "1.5.7",
       "org.typelevel"          %% "munit-cats-effect-3" % "1.0.7"   % Test,
       "org.http4s"             %% "http4s-ember-client" % "0.23.27" % Test
     )
