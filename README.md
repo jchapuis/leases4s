@@ -1,9 +1,8 @@
 # leases4s
 ![logo](/doc/logo-title-small.png)
 
-[![Release](https://github.com/jchapuis/leases4s/actions/workflows/release.yml/badge.svg)](https://github.com/jchapuis/leases4s/actions/workflows/release.yml)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.jchapuis/leases4s_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.jchapuis/leases4s_2.13)
-[![codecov](https://codecov.io/gh/jchapuis/leases4s/branch/master/graph/badge.svg?token=BOAOIFC7BF)](https://codecov.io/gh/jchapuis/leases4s)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.jchapuis/leases4s-core_3/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.jchapuis/leases4s-core_3)
+[![codecov](https://codecov.io/gh/jchapuis/leases4s/graph/badge.svg?token=onr4GrfPgU)](https://codecov.io/gh/jchapuis/leases4s)
 <a href="https://typelevel.org/cats/"><img src="https://typelevel.org/cats/img/cats-badge.svg" height="40px" align="right" alt="Cats friendly" /></a>
 
 Functional abstractions for leases in Kubernetes allowing for use cases such as distributed locking, leader election, map-reduce, cluster formation, and more.
