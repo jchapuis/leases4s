@@ -5,7 +5,6 @@ import cats.effect.{Deferred, IO}
 import cats.syntax.flatMap.*
 import cats.syntax.parallel.*
 import cats.syntax.show.*
-import com.goyeau.kubernetes.client.KubernetesClient
 import io.github.jchapuis.leases4s.LeaseRepository.{LeaseEvent, LeaseParameters}
 import io.github.jchapuis.leases4s.impl.K8sHelpers.*
 import io.github.jchapuis.leases4s.impl.KubeLeaseRepository
