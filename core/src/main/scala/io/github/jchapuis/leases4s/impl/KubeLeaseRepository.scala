@@ -159,10 +159,12 @@ private[impl] class KubeLeaseRepository[F[_]: Async: Random: Logger](
 }
 
 object KubeLeaseRepository {
-  def apply[F[_]: Async: Logger](label: Label, others: Label*)(implicit
+  def apply[F[_]](label: Label, others: Label*)(implicit
       client: KubernetesClient[F],
       namespace: Namespace,
-      parameters: LeaseParameters
+      parameters: LeaseParameters,
+      async: Async[F],
+      logger: Logger[F]
   ): Resource[F, LeaseRepository[F]] = {
     val labels                   = label :: others.toList
     implicit val api: KubeApi[F] = new KubeApi[F](client, namespace)
