@@ -6,7 +6,7 @@ import cats.syntax.option.*
 import io.github.jchapuis.leases4s.K3dClientProvider
 import io.github.jchapuis.leases4s.LeaseRepository.LeaseParameters
 import io.github.jchapuis.leases4s.impl.KubeLeaseRepository
-import io.github.jchapuis.leases4s.model.{KubeString, Label}
+import io.github.jchapuis.leases4s.model.Label
 import io.github.jchapuis.leases4s.model.literals.*
 import io.github.jchapuis.leases4s.patterns.cluster.Member
 import io.github.jchapuis.leases4s.patterns.cluster.Membership.{Card, Cards}

@@ -12,9 +12,13 @@ val commonSettings = Seq(
     Wart.ImplicitConversion,
     Wart.Overloading
   ),
-  scalaVersion       := scala213,
-  crossScalaVersions := Seq(scala213, scala3),
-  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
+  libraryDependencies ++= {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, _)) =>
+        Seq(compilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"))
+      case _ => Nil
+    }
+  },
   Compile / scalacOptions ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, _)) => Seq("-Xsource:3", "-Xlint:unused")
@@ -53,6 +57,7 @@ inThisBuild(
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val core = (project in file("core"))
+  .settings(scalaVersion := scala213, crossScalaVersions := Seq(scala213, scala3))
   .settings(commonSettings*)
   .settings(name := "leases4s-core")
   .settings(
@@ -70,6 +75,7 @@ lazy val core = (project in file("core"))
   )
 
 lazy val patterns = (project in file("patterns"))
+  .settings(scalaVersion := scala213, crossScalaVersions := Seq(scala213, scala3))
   .settings(commonSettings*)
   .settings(name := "leases4s-patterns")
   .settings(
@@ -82,8 +88,8 @@ lazy val patterns = (project in file("patterns"))
   .dependsOn(core % "compile->compile;test->test")
 
 lazy val example = (project in file("example"))
-  .settings(commonSettings*)
   .settings(scalaVersion := scala3, crossScalaVersions := Nil)
+  .settings(commonSettings*)
   .settings(name := "leases4s-example")
   .dependsOn(core)
   .settings(
