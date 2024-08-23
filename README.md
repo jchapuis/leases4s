@@ -6,7 +6,7 @@
 [![codecov](https://codecov.io/gh/jchapuis/leases4s/branch/master/graph/badge.svg?token=BOAOIFC7BF)](https://codecov.io/gh/jchapuis/leases4s)
 <a href="https://typelevel.org/cats/"><img src="https://typelevel.org/cats/img/cats-badge.svg" height="40px" align="right" alt="Cats friendly" /></a>
 
-Tagless abstractions for leases in Kubernetes allowing for use cases such as distributed critical section, leader election, etc. 
+Functional abstractions for leases in Kubernetes allowing for use cases such as distributed locking, leader election, map-reduce, cluster formation, and more.
 
 ## Getting started
 
@@ -16,8 +16,12 @@ Add the following dependency to your `build.sbt`:
 libraryDependencies += "io.github.jchapuis" %% "leases4s-core" % "x.y.z" // latest from maven badge above
 ```
 
+## Blog
+
+For a more in-depth explanation, make sure to check out the [blog article](https://jonas-chapuis.medium.com/distributed-locks-in-kubernetes-with-scala-f3ad8253f894).
+
 ## Abstractions
-As the library name suggests, the library is all about leases and everything revolves around these two main abstractions: 
+As its name suggests, the library is all about leases and everything revolves around these two main abstractions: 
 
 ### Lease
 The `Lease` trait is the main abstraction of the library. It represents a lease in Kubernetes, and is parametrized by the effect type `F`. The lease has an identifier, can bear labels for filtering, and has support for metadata in the form of annotations. A lease has a holder and can expire: expiry can be observed via an FS2 stream:
