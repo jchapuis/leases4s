@@ -5,6 +5,7 @@ import cats.effect.{Deferred, IO}
 import cats.syntax.flatMap.*
 import cats.syntax.parallel.*
 import cats.syntax.show.*
+import com.goyeau.kubernetes.client.KubernetesClient
 import io.github.jchapuis.leases4s.LeaseRepository.{LeaseEvent, LeaseParameters}
 import io.github.jchapuis.leases4s.impl.K8sHelpers.*
 import io.github.jchapuis.leases4s.impl.KubeLeaseRepository
@@ -13,6 +14,7 @@ import munit.CatsEffectSuite
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
 import io.github.jchapuis.leases4s.model.literals.*
+
 import scala.concurrent.duration.*
 
 class KubeLeaseRepositorySuite extends CatsEffectSuite with K3dClientProvider {
@@ -118,6 +120,20 @@ class KubeLeaseRepositorySuite extends CatsEffectSuite with K3dClientProvider {
           leaseID = LeaseID("watcher-test-lease").get
           _ <- repository.acquire(leaseID, holderID).use_
           _ <- acquired.get.assertEquals(holderID).&>(released.get.assertEquals(leaseID))
+        } yield ()
+      }
+    }
+  }
+
+  test("leases can be listed") {
+    withKubeClient { implicit client =>
+      KubeLeaseRepository[IO](testLabel).use { repository =>
+        for {
+          _            <- assertIOBoolean(repository.list.map(_.isEmpty))
+          (_, release) <- repository.acquire(LeaseID("list-test-lease").get, holderID).allocated
+          leases       <- repository.list
+          _            <- assertIO(repository.list.map(_.size), 1)
+          _            <- release
         } yield ()
       }
     }
@@ -320,6 +336,36 @@ class KubeLeaseRepositorySuite extends CatsEffectSuite with K3dClientProvider {
         } yield ()
       }
     }
+  }
+
+  test("disconnected repository leads to lease expired, which can be reacquired by another holder") {
+    for {
+      (doomedClient, releaseDoomedClient) <- client.allocated
+      (doomedRepository, releaseDoomedRepository) <- KubeLeaseRepository[IO](testLabel)(
+        doomedClient,
+        namespace,
+        parameters,
+        implicitly,
+        implicitly
+      ).allocated
+      (lease, release) <- doomedRepository.acquire(LeaseID("disconnected-test-lease").get, holderID).allocated
+      _                <- releaseDoomedClient
+      _                <- sleep
+      _                <- assertIOBoolean(lease.isExpired)
+      _                <- IO.sleep(35.seconds) // give time for the repository to exercise some recovery attempts
+      _                <- releaseDoomedRepository
+      (newClient, releaseNewClient) <- client.allocated
+      (newRepository, releaseNewRepository) <- KubeLeaseRepository[IO](testLabel)(
+        newClient,
+        namespace,
+        parameters,
+        implicitly,
+        implicitly
+      ).allocated
+      _ <- newRepository.acquire(LeaseID("disconnected-test-lease").get, HolderID.unique).use_
+      _ <- releaseNewRepository
+      _ <- releaseNewClient
+    } yield ()
   }
 
   private def assertTupleEqual[A](tuple: (A, A)): IO[Unit] = tuple match {
