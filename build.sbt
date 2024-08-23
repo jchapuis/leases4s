@@ -41,7 +41,7 @@ inThisBuild(
     sonatypeProjectHosting := Some(
       xerial.sbt.Sonatype.GitHubHosting("jchapuis", "leases4s", "me@jonaschapuis.com")
     ),
-    versionPolicyIntention := Compatibility.None,
+    versionPolicyIntention := Compatibility.BinaryAndSourceCompatible,
     versionScheme          := Some("early-semver"),
     versionPolicyIgnoredInternalDependencyVersions := Some(
       "^\\d+\\.\\d+\\.\\d+\\+\\d+".r
@@ -53,7 +53,6 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val core = (project in file("core"))
   .settings(commonSettings*)
-  .settings(versionPolicyCheck / skip := true)
   .settings(name := "leases4s-core")
   .settings(
     libraryDependencies ++= Seq(
@@ -71,7 +70,6 @@ lazy val core = (project in file("core"))
 
 lazy val patterns = (project in file("patterns"))
   .settings(commonSettings*)
-  .settings(versionPolicyCheck / skip := true)
   .settings(name := "leases4s-patterns")
   .settings(
     libraryDependencies ++= Seq(
