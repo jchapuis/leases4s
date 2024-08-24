@@ -16,7 +16,7 @@ object IndexPage {
   val descriptionLabel       = "Description"
   val wordCountLabel         = "Word Count"
 
-  def parseFiles(html: String): List[File] =
+  def parseFiles(html: String): List[File] = {
     val doc: Document  = Jsoup.parse(html)
     val rows: Elements = doc.select("table tbody tr")
     rows.asScala
@@ -30,6 +30,7 @@ object IndexPage {
       }
       .collect { case Some(file) => file }
       .toList
+  }
 
   def render(sortBy: Sorting, files: Set[File]): String = {
     val raw = html(
@@ -82,10 +83,14 @@ object IndexPage {
     "<!DOCTYPE html>\n" + new PrettyPrinter(80, 4).format(scala.xml.Utility.trim(XML.loadString(raw)))
   }
 
-  enum Sorting:
-    case Name, Description, WordCount
+  sealed trait Sorting
+  object Sorting {
+    object Name        extends Sorting
+    object Description extends Sorting
+    object WordCount   extends Sorting
+  }
 
-  case class File(name: String, description: String, wordCount: Int)
+  final case class File(name: String, description: String, wordCount: Int)
 
   private def renderTable(sortBy: Sorting, files: Set[File]) = files.toSeq
     .sortWith { case (file1, file2) =>

@@ -4,7 +4,7 @@ import cats.Show
 import cats.kernel.Eq
 import scala.language.implicitConversions
 
-final case class HolderID private (value: String)
+final case class HolderID(value: String)
 object HolderID {
   def apply(value: String): Option[HolderID] = Option.when(value.nonEmpty)(new HolderID(value))
   def apply(value: KubeString): HolderID     = new HolderID(value.value)

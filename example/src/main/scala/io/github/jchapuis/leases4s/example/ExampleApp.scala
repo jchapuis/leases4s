@@ -28,7 +28,7 @@ import java.net.URI
 
 object ExampleApp extends IOApp {
   val localStackEndpoint = "http://host.k3d.internal:4566";
-  given S3AsyncClient =
+  implicit val s3Client: S3AsyncClient =
     S3AsyncClient
       .builder()
       .credentialsProvider(DefaultCredentialsProvider.create())
@@ -37,13 +37,14 @@ object ExampleApp extends IOApp {
       .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
       .build()
 
-  given Namespace = Namespace.Default
+  implicit val namespace: Namespace = Namespace.Default
 
-  private def kubeConfig(using Logger[IO]): IO[KubeConfig[IO]] = KubeConfig.cluster[IO].handleErrorWith { throwable =>
-    Logger[IO].error(throwable)("Failed to load cluster kubeconfig") *> IO.raiseError(throwable)
-  }
+  private def kubeConfig(implicit logger: Logger[IO]): IO[KubeConfig[IO]] =
+    KubeConfig.cluster[IO].handleErrorWith { throwable =>
+      Logger[IO].error(throwable)("Failed to load cluster kubeconfig") *> IO.raiseError(throwable)
+    }
 
-  private def service(using fileUploader: FileUploader, logger: Logger[IO]) = HttpRoutes.of[IO] {
+  private def service(implicit fileUploader: FileUploader, logger: Logger[IO]) = HttpRoutes.of[IO] {
     case GET -> Root / "uploads" / "health" => Ok("OK")
     case req @ POST -> Root / "uploads" / "file" =>
       req.decode[Multipart[IO]] { form =>
@@ -75,11 +76,11 @@ object ExampleApp extends IOApp {
   }
 
   private val app = for {
-    given Logger[IO]           <- Slf4jLogger.create[IO].toResource
-    given KubernetesClient[IO] <- KubernetesClient[IO](kubeConfig)
-    given LeaseRepository[IO]  <- LeaseRepository.kubernetes[IO](Label(ks"app", ks"example"))
-    given FileUploader = FileUploader("s3-website-bucket")
-    uploaderService    = service
+    implicit0(logger: Logger[IO])               <- Slf4jLogger.create[IO].toResource
+    implicit0(kubeClient: KubernetesClient[IO]) <- KubernetesClient[IO](kubeConfig)
+    implicit0(repository: LeaseRepository[IO])  <- LeaseRepository.kubernetes[IO](Label(ks"app", ks"example"))
+    implicit0(uploader: FileUploader) = new FileUploader("s3-website-bucket")
+    uploaderService                   = service
     httpServer <- EmberServerBuilder
       .default[IO]
       .withLogger(Logger[IO])

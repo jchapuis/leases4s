@@ -1,4 +1,4 @@
-val scala213 = "2.13.11"
+val scala213 = "2.13.14"
 val scala3   = "3.3.1"
 
 val commonSettings = Seq(
@@ -10,7 +10,8 @@ val commonSettings = Seq(
     Wart.DefaultArguments,
     Wart.Recursion,
     Wart.ImplicitConversion,
-    Wart.Overloading
+    Wart.Overloading,
+    Wart.OptionPartial
   ),
   libraryDependencies ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
@@ -88,7 +89,7 @@ lazy val patterns = (project in file("patterns"))
   .dependsOn(core % "compile->compile;test->test")
 
 lazy val example = (project in file("example"))
-  .settings(scalaVersion := scala3, crossScalaVersions := Nil)
+  .settings(scalaVersion := scala213, crossScalaVersions := Nil)
   .settings(commonSettings*)
   .settings(name := "leases4s-example")
   .dependsOn(core)
@@ -98,14 +99,16 @@ lazy val example = (project in file("example"))
       "org.http4s"             %% "http4s-circe"        % "0.23.27",
       "org.http4s"             %% "http4s-ember-server" % "0.23.27",
       "io.circe"               %% "circe-generic"       % "0.14.9",
-      "software.amazon.awssdk"  % "s3"                  % "2.25.27",
       "com.lihaoyi"            %% "scalatags"           % "0.12.0",
       "org.scala-lang.modules" %% "scala-xml"           % "2.3.0",
-      "org.jsoup"               % "jsoup"               % "1.18.1",
       "org.typelevel"          %% "log4cats-slf4j"      % "2.7.0",
-      "ch.qos.logback"          % "logback-classic"     % "1.5.7",
       "org.typelevel"          %% "munit-cats-effect-3" % "1.0.7"   % Test,
       "org.http4s"             %% "http4s-ember-client" % "0.23.27" % Test
+    ),
+    libraryDependencies ++= Seq(
+      "org.jsoup"              % "jsoup"           % "1.18.1",
+      "software.amazon.awssdk" % "s3"              % "2.25.27",
+      "ch.qos.logback"         % "logback-classic" % "1.5.7"
     )
   )
   .settings(run / fork := true, publish / skip := true)
