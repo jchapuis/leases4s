@@ -5,7 +5,7 @@ import cats.Show
 import scala.language.implicitConversions
 import scala.util.matching.Regex
 
-final case class KubeString private (value: String) extends AnyVal
+final case class KubeString(value: String) extends AnyVal
 
 object KubeString {
   def apply(value: String): Option[KubeString] = value match {

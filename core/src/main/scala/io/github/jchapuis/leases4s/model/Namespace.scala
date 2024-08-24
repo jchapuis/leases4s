@@ -2,7 +2,7 @@ package io.github.jchapuis.leases4s.model
 
 import scala.language.implicitConversions
 
-final case class Namespace private (value: KubeString)
+final case class Namespace(value: KubeString)
 
 object Namespace {
   @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))

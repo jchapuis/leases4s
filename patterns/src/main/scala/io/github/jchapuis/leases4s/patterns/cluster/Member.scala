@@ -3,7 +3,7 @@ package io.github.jchapuis.leases4s.patterns.cluster
 import cats.kernel.Eq
 import io.github.jchapuis.leases4s.model.KubeString
 
-final case class Member private (host: String, port: Int, roles: Set[KubeString])
+final case class Member(host: String, port: Int, roles: Set[KubeString])
 
 object Member {
   def apply(host: String, port: Int, roles: Set[KubeString] = Set.empty): Option[Member] =
