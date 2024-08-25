@@ -18,7 +18,7 @@ private[impl] class LeaseBasedMembership[F[_]: Async](
 
   def cards: F[Cards] =
     for {
-      members <- cluster.members.map(_.zipWithIndex.map { case (member, index) => (member, Card(index)) }.map(_.swap))
+      members  <- cluster.members.map(_.zipWithIndex.map { case (member, index) => (member, Card(index)) }.map(_.swap))
       holderID <- heldLease.holder
     } yield members.partition { case (_, member) => member.holderID === holderID } match {
       case (List((mine, _)), others) => Cards(Some(mine), others.toMap)

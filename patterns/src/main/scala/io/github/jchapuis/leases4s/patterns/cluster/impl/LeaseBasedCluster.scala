@@ -20,14 +20,14 @@ private[impl] final class LeaseBasedCluster[F[_]: Async](val repository: LeaseRe
 
   private def acquireMembershipLease(member: Member): Resource[F, HeldLease[F]] =
     for {
-      leaseID <- Resource.eval(membershipLeaseID)
+      leaseID  <- Resource.eval(membershipLeaseID)
       holderID <- Resource.pure(member.holderID)
-      lease <- repository.acquire(leaseID, holderID, member.roles.map(Annotation("role", _)).toList.flatten)
+      lease    <- repository.acquire(leaseID, holderID, member.roles.map(Annotation("role", _)).toList.flatten)
     } yield lease
 
   @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
   private def memberFor(lease: Lease[F]): F[Member] = for {
-    roles <- lease.annotations
+    roles    <- lease.annotations
     holderID <- lease.holder
     splits = holderID.split(":")
   } yield Member(splits.head, splits.last.toInt, roles.map(_.value).toSet).get
