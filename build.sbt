@@ -102,7 +102,7 @@ lazy val example = (project in file("example"))
       "com.lihaoyi"            %% "scalatags"           % "0.12.0",
       "org.scala-lang.modules" %% "scala-xml"           % "2.3.0",
       "org.typelevel"          %% "log4cats-slf4j"      % "2.7.0",
-      "org.typelevel"          %% "munit-cats-effect-3" % "1.0.7"   % Test,
+      "org.typelevel"          %% "munit-cats-effect"   % "2.0.0"   % Test,
       "org.http4s"             %% "http4s-ember-client" % "0.23.27" % Test
     ),
     libraryDependencies ++= Seq(
