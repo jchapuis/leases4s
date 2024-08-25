@@ -7,7 +7,7 @@ private[impl] final case class Version(value: String) extends AnyVal
 private[impl] object Version {
 
   /** The version of a lease that has not been acquired yet
-    * - this is necessary to enable concurrency control on lease creation
+    *   - this is necessary to enable concurrency control on lease creation
     */
   val Nil: Version = Version("nil")
 
