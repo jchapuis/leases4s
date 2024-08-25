@@ -59,7 +59,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val core = (project in file("core"))
   .settings(scalaVersion := scala213, crossScalaVersions := Seq(scala213, scala3))
-  .settings(commonSettings*)
+  .settings(commonSettings *)
   .settings(name := "leases4s-core")
   .settings(
     libraryDependencies ++= Seq(
@@ -77,7 +77,7 @@ lazy val core = (project in file("core"))
 
 lazy val patterns = (project in file("patterns"))
   .settings(scalaVersion := scala213, crossScalaVersions := Seq(scala213, scala3))
-  .settings(commonSettings*)
+  .settings(commonSettings *)
   .settings(name := "leases4s-patterns")
   .settings(
     libraryDependencies ++= Seq(
@@ -90,7 +90,7 @@ lazy val patterns = (project in file("patterns"))
 
 lazy val example = (project in file("example"))
   .settings(scalaVersion := scala213, crossScalaVersions := Nil)
-  .settings(commonSettings*)
+  .settings(commonSettings *)
   .settings(name := "leases4s-example")
   .dependsOn(core)
   .settings(

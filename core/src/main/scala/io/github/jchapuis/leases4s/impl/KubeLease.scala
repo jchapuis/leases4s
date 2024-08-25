@@ -103,14 +103,16 @@ private[impl] object KubeLease {
   }
 
   /** This spawns a fiber that watches for lease expiry and will repeatedly attempt to delete the expired lease after
-    * some delay until its deleted flag is set to true, which  happens eventually when the lease is deleted
-    * and we receive a notification from the watcher.
-    * This active revocation mechanism makes sure we don't leak leases in the cluster if a process dies before it can delete its lease.
-    * All replicas are thus contributing to the revocation of expired leases. We use a random delay to avoid multiple nodes
-    * attempting to delete the lease at the same time.
-    * @param lease The lease to cleanup
-    * @tparam F The effect type
-    * @return F effected with a fire and forget fiber that will revoke the lease
+    * some delay until its deleted flag is set to true, which happens eventually when the lease is deleted and we
+    * receive a notification from the watcher. This active revocation mechanism makes sure we don't leak leases in the
+    * cluster if a process dies before it can delete its lease. All replicas are thus contributing to the revocation of
+    * expired leases. We use a random delay to avoid multiple nodes attempting to delete the lease at the same time.
+    * @param lease
+    *   The lease to cleanup
+    * @tparam F
+    *   The effect type
+    * @return
+    *   F effected with a fire and forget fiber that will revoke the lease
     */
   private def startRevoker[F[_]: Temporal: Logger: Random: KubeApi](
       lease: KubeLease[F]
@@ -120,8 +122,8 @@ private[impl] object KubeLease {
     lazy val ensureDeleted =
       for {
         randomDelay <- Random[F].betweenDouble(5.0, 10.0).map(_.seconds)
-        _ <- Temporal[F].sleep(randomDelay)
-        _ <- lease.data.get.map(_.deleted).ifM(Applicative[F].unit, attemptDelete)
+        _           <- Temporal[F].sleep(randomDelay)
+        _           <- lease.data.get.map(_.deleted).ifM(Applicative[F].unit, attemptDelete)
       } yield ()
     lazy val attemptDelete = for {
       _ <- Logger[F].debug(show"Lease ${lease.id} has expired but hasn't been deleted, attempting to delete it")
