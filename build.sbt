@@ -1,5 +1,5 @@
 val scala213 = "2.13.14"
-val scala3   = "3.3.1"
+val scala3   = "3.3.3"
 
 val commonSettings = Seq(
   Compile / compile / wartremoverErrors ++= Warts.allBut(
