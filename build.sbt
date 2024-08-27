@@ -66,7 +66,7 @@ lazy val core = (project in file("core"))
       "com.goyeau"    %% "kubernetes-client"   % "0.11.0",
       "org.typelevel" %% "log4cats-core"       % "2.7.0",
       "org.typelevel" %% "literally"           % "1.2.0",
-      "co.fs2"        %% "fs2-core"            % "3.10.2",
+      "co.fs2"        %% "fs2-core"            % "3.11.0",
       "org.scalameta" %% "munit"               % "1.0.0" % Test,
       "org.typelevel" %% "munit-cats-effect"   % "2.0.0" % Test,
       "org.typelevel" %% "cats-effect-testkit" % "3.5.4" % Test,
