@@ -4,6 +4,7 @@ import cats.effect.IO
 import cats.syntax.parallel.*
 import fs2.io.file.Files
 import io.github.jchapuis.leases4s.example.services.IndexPage
+import munit.AnyFixture
 import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.headers.`Content-Type`
 import org.http4s.implicits.*
@@ -19,7 +20,7 @@ import scala.concurrent.duration.{Duration, DurationInt, FiniteDuration}
 import scala.jdk.CollectionConverters.*
 
 class ExampleAppSuite extends munit.CatsEffectSuite {
-  override val munitTimeout: FiniteDuration = Duration(3, "m")
+  override val munitIOTimeout: FiniteDuration = Duration(3, "m")
   private val httpClient =
     ResourceSuiteLocalFixture(
       "client",
@@ -96,5 +97,5 @@ class ExampleAppSuite extends munit.CatsEffectSuite {
     }
   }
 
-  override def munitFixtures: Seq[Fixture[?]] = List(httpClient)
+  override def munitFixtures: Seq[AnyFixture[?]] = Seq(httpClient)
 }
