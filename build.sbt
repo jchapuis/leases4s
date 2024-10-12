@@ -67,11 +67,11 @@ lazy val core = (project in file("core"))
       "org.typelevel" %% "log4cats-core"       % "2.7.0",
       "org.typelevel" %% "literally"           % "1.2.0",
       "co.fs2"        %% "fs2-core"            % "3.11.0",
-      "org.scalameta" %% "munit"               % "1.0.2" % Test,
-      "org.typelevel" %% "munit-cats-effect"   % "2.0.0" % Test,
-      "org.typelevel" %% "cats-effect-testkit" % "3.5.4" % Test,
-      "org.typelevel" %% "log4cats-slf4j"      % "2.7.0" % Test,
-      "ch.qos.logback" % "logback-classic"     % "1.5.9" % Test
+      "org.scalameta" %% "munit"               % "1.0.2"  % Test,
+      "org.typelevel" %% "munit-cats-effect"   % "2.0.0"  % Test,
+      "org.typelevel" %% "cats-effect-testkit" % "3.5.4"  % Test,
+      "org.typelevel" %% "log4cats-slf4j"      % "2.7.0"  % Test,
+      "ch.qos.logback" % "logback-classic"     % "1.5.10" % Test
     )
   )
 
@@ -108,7 +108,7 @@ lazy val example = (project in file("example"))
     libraryDependencies ++= Seq(
       "org.jsoup"              % "jsoup"           % "1.18.1",
       "software.amazon.awssdk" % "s3"              % "2.25.70",
-      "ch.qos.logback"         % "logback-classic" % "1.5.9"
+      "ch.qos.logback"         % "logback-classic" % "1.5.10"
     )
   )
   .settings(run / fork := true, publish / skip := true)
