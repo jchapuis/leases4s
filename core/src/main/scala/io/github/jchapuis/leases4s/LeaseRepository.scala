@@ -76,9 +76,9 @@ object LeaseRepository {
       watcherStreamTimeout: FiniteDuration = 30.seconds
   )
   object LeaseParameters {
-    val DefaultRenewalFrequencyRatio: Double     = 1d / 3
-    val DefaultLeaseDuration: FiniteDuration     = 10.seconds
-    val DefaultOnErrorRetryDelay: FiniteDuration = 3.second
+    val DefaultRenewalFrequencyRatio: Double        = 1d / 3
+    val DefaultLeaseDuration: FiniteDuration        = 10.seconds
+    val DefaultOnErrorRetryDelay: FiniteDuration    = 3.second
     val DefaultWatcherStreamTimeout: FiniteDuration = 30.seconds
     val Default: LeaseParameters = LeaseParameters(
       DefaultLeaseDuration,
