@@ -9,7 +9,7 @@ private[impl] object Version {
   /** The version of a lease that has not been acquired yet
     *   - this is necessary to enable concurrency control on lease creation
     */
-  val Nil: Version = Version("nil")
+  val Zero: Version = Version("0")
 
   implicit def toStr(version: Version): String = version.value
 }
