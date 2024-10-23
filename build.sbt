@@ -1,5 +1,5 @@
-val scala213 = "2.13.14"
-val scala3   = "3.3.1"
+val scala213 = "2.13.15"
+val scala3   = "3.5.1"
 
 val commonSettings = Seq(
   Compile / compile / wartremoverErrors ++= Warts.allBut(
@@ -26,7 +26,7 @@ val commonSettings = Seq(
       case _            => Seq("-source:future", "-Wunused:imports")
     }
   },
-  Compile / scalacOptions ++= Seq("-Xfatal-warnings"),
+  Compile / scalacOptions ++= Seq("-Xfatal-warnings", "-deprecation"),
   Test / parallelExecution := false
 )
 
@@ -59,7 +59,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val core = (project in file("core"))
   .settings(scalaVersion := scala213, crossScalaVersions := Seq(scala213, scala3))
-  .settings(commonSettings*)
+  .settings(commonSettings *)
   .settings(name := "leases4s-core")
   .settings(
     libraryDependencies ++= Seq(
@@ -67,21 +67,21 @@ lazy val core = (project in file("core"))
       "org.typelevel" %% "log4cats-core"       % "2.7.0",
       "org.typelevel" %% "literally"           % "1.2.0",
       "co.fs2"        %% "fs2-core"            % "3.11.0",
-      "org.scalameta" %% "munit"               % "1.0.0" % Test,
+      "org.scalameta" %% "munit"               % "1.0.2" % Test,
       "org.typelevel" %% "munit-cats-effect"   % "2.0.0" % Test,
       "org.typelevel" %% "cats-effect-testkit" % "3.5.4" % Test,
       "org.typelevel" %% "log4cats-slf4j"      % "2.7.0" % Test,
-      "ch.qos.logback" % "logback-classic"     % "1.5.7" % Test
+      "ch.qos.logback" % "logback-classic"     % "1.5.9" % Test
     )
   )
 
 lazy val patterns = (project in file("patterns"))
   .settings(scalaVersion := scala213, crossScalaVersions := Seq(scala213, scala3))
-  .settings(commonSettings*)
+  .settings(commonSettings *)
   .settings(name := "leases4s-patterns")
   .settings(
     libraryDependencies ++= Seq(
-      "org.scalameta" %% "munit"               % "1.0.0" % Test,
+      "org.scalameta" %% "munit"               % "1.0.2" % Test,
       "org.typelevel" %% "munit-cats-effect"   % "2.0.0" % Test,
       "org.typelevel" %% "cats-effect-testkit" % "3.5.4" % Test
     )
@@ -90,25 +90,25 @@ lazy val patterns = (project in file("patterns"))
 
 lazy val example = (project in file("example"))
   .settings(scalaVersion := scala213, crossScalaVersions := Nil)
-  .settings(commonSettings*)
+  .settings(commonSettings *)
   .settings(name := "leases4s-example")
   .dependsOn(core)
   .settings(
     libraryDependencies ++= Seq(
-      "org.http4s"             %% "http4s-dsl"          % "0.23.27",
-      "org.http4s"             %% "http4s-circe"        % "0.23.27",
-      "org.http4s"             %% "http4s-ember-server" % "0.23.27",
-      "io.circe"               %% "circe-generic"       % "0.14.9",
-      "com.lihaoyi"            %% "scalatags"           % "0.12.0",
+      "org.http4s"             %% "http4s-dsl"          % "0.23.28",
+      "org.http4s"             %% "http4s-circe"        % "0.23.28",
+      "org.http4s"             %% "http4s-ember-server" % "0.23.28",
+      "io.circe"               %% "circe-generic"       % "0.14.10",
+      "com.lihaoyi"            %% "scalatags"           % "0.13.1",
       "org.scala-lang.modules" %% "scala-xml"           % "2.3.0",
       "org.typelevel"          %% "log4cats-slf4j"      % "2.7.0",
-      "org.typelevel"          %% "munit-cats-effect-3" % "1.0.7"   % Test,
+      "org.typelevel"          %% "munit-cats-effect"   % "2.0.0"   % Test,
       "org.http4s"             %% "http4s-ember-client" % "0.23.27" % Test
     ),
     libraryDependencies ++= Seq(
       "org.jsoup"              % "jsoup"           % "1.18.1",
-      "software.amazon.awssdk" % "s3"              % "2.25.27",
-      "ch.qos.logback"         % "logback-classic" % "1.5.7"
+      "software.amazon.awssdk" % "s3"              % "2.25.70",
+      "ch.qos.logback"         % "logback-classic" % "1.5.9"
     )
   )
   .settings(run / fork := true, publish / skip := true)
