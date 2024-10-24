@@ -6,7 +6,6 @@ import cats.syntax.applicative.*
 import cats.syntax.applicativeError.*
 
 trait HeldLease[F[_]] extends Lease[F] {
-  implicit def F: Concurrent[F]
 
   /** Runs the given action guarded by the lease: this implements a distributed critical section.
     *   - if the lease is still held after completion of the action, the outcome is `Outcome.Succeeded`
@@ -32,7 +31,7 @@ trait HeldLease[F[_]] extends Lease[F] {
     * @return
     *   outcome of the action
     */
-  def guard[A](fa: F[A]): F[Outcome[F, Throwable, A]] =
+  def guard[A](fa: F[A])(implicit concurrent: Concurrent[F]): F[Outcome[F, Throwable, A]] =
     fs2.Stream
       .eval(fa)
       .map(Option(_))

@@ -1,6 +1,6 @@
 package io.github.jchapuis.leases4s.impl
 
-import cats.effect.kernel.{Concurrent, Ref, Temporal}
+import cats.effect.kernel.{Ref, Temporal}
 import cats.effect.std.Random
 import cats.effect.syntax.spawn.*
 import cats.syntax.applicative.*
@@ -85,8 +85,6 @@ private[impl] class KubeLease[F[_]: Temporal](
           }
       } yield ()
     )
-
-  implicit def F: Concurrent[F] = Concurrent[F]
 }
 
 private[impl] object KubeLease {
