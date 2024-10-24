@@ -36,7 +36,7 @@ object K8sHelpers {
       annotations: List[Annotation],
       acquireTime: Instant,
       leaseDuration: FiniteDuration
-  ): v1.Lease = v1LeaseFor(id, holderID, labels, annotations, Some(Version.Zero), acquireTime, None, leaseDuration)
+  ): v1.Lease = v1LeaseFor(id, holderID, labels, annotations, version = None, acquireTime, None, leaseDuration)
 
   def leaseIDFromK8s(lease: v1.Lease): Option[LeaseID] = lease.metadata.flatMap(_.name).flatMap(LeaseID(_))
 
