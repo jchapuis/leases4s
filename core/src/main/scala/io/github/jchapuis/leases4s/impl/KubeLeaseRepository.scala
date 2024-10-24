@@ -129,7 +129,7 @@ private[impl] class KubeLeaseRepository[F[_]: Async: Random: Logger](
       _   <- OptionT.liftF(nextAcquiredLeaseFor(id, holderID).flatTap(deferredCreatedLease.complete).start)
       now <- OptionT.liftF(Clock[F].realTimeInstant)
       status <- OptionT.liftF(
-        api.createOrUpdate(k8sLease(id, holderID, labels, annotations, now, parameters.leaseDuration))
+        api.create(k8sLease(id, holderID, labels, annotations, now, parameters.leaseDuration))
       )
       _ <- OptionT.liftF(
         if (!status.isSuccess) Logger[F].warn(show"Failed to create lease $id for $holderID: ${status.reason}")
