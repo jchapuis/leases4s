@@ -47,7 +47,7 @@ inThisBuild(
     sonatypeProjectHosting := Some(
       xerial.sbt.Sonatype.GitHubHosting("jchapuis", "leases4s", "me@jonaschapuis.com")
     ),
-    versionPolicyIntention := Compatibility.BinaryCompatible,
+    versionPolicyIntention := Compatibility.None,
     versionScheme          := Some("early-semver"),
     versionPolicyIgnoredInternalDependencyVersions := Some(
       "^\\d+\\.\\d+\\.\\d+\\+\\d+".r
