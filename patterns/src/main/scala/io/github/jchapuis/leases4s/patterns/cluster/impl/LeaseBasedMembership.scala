@@ -5,7 +5,6 @@ import cats.syntax.eq.*
 import cats.syntax.flatMap.*
 import cats.syntax.functor.*
 import io.github.jchapuis.leases4s.HeldLease
-import io.github.jchapuis.leases4s.patterns.cluster.Membership.Card
 import io.github.jchapuis.leases4s.patterns.cluster.impl.LeaseHelpers.*
 import io.github.jchapuis.leases4s.patterns.cluster.{Member, Membership}
 import Membership.*
