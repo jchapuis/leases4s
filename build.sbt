@@ -95,15 +95,15 @@ lazy val example = (project in file("example"))
   .dependsOn(core)
   .settings(
     libraryDependencies ++= Seq(
-      "org.http4s"             %% "http4s-dsl"          % "0.23.28",
-      "org.http4s"             %% "http4s-circe"        % "0.23.28",
-      "org.http4s"             %% "http4s-ember-server" % "0.23.28",
+      "org.http4s"             %% "http4s-dsl"          % "0.23.29",
+      "org.http4s"             %% "http4s-circe"        % "0.23.29",
+      "org.http4s"             %% "http4s-ember-server" % "0.23.29",
       "io.circe"               %% "circe-generic"       % "0.14.10",
       "com.lihaoyi"            %% "scalatags"           % "0.13.1",
       "org.scala-lang.modules" %% "scala-xml"           % "2.3.0",
       "org.typelevel"          %% "log4cats-slf4j"      % "2.7.0",
       "org.typelevel"          %% "munit-cats-effect"   % "2.0.0"   % Test,
-      "org.http4s"             %% "http4s-ember-client" % "0.23.28" % Test
+      "org.http4s"             %% "http4s-ember-client" % "0.23.29" % Test
     ),
     libraryDependencies ++= Seq(
       "org.jsoup"              % "jsoup"           % "1.18.1",
