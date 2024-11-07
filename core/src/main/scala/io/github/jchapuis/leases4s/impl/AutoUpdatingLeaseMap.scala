@@ -22,6 +22,7 @@ import io.github.jchapuis.leases4s.impl.RetryHelpers.*
 import io.github.jchapuis.leases4s.impl.model.{LeaseData, LeaseDataEvent}
 import io.github.jchapuis.leases4s.model.*
 import org.typelevel.log4cats.Logger
+
 import scala.jdk.DurationConverters.*
 
 private[impl] class AutoUpdatingLeaseMap[F[_]: Temporal: Logger: Random](
@@ -58,20 +59,28 @@ private[impl] class AutoUpdatingLeaseMap[F[_]: Temporal: Logger: Random](
     val watcher =
       kubeApi.leasesApi
         .watch(labelMap, startRevision)
+        .map(
+          _.map(event =>
+            event.`type` match {
+              case EventType.ERROR => Left("error event")
+              case _               => Right(event)
+            }
+          )
+        )
         .timeoutOnPull(parameters.watcherStreamTimeout)
         .attempt
         .map(_.leftMap(_.getMessage))
-        .map(_.flatten)
+        .map(_.flatten.flatten)
     watcher.zipWithPrevious
       .flatMap {
-        case (previous, Left(throwable)) =>
+        case (previous, Left(error)) =>
           val maybeLastSeenRevision = previous match {
             case Some(Right(WatchEvent(_, lastEvent))) => lastEvent.metadata.flatMap(_.resourceVersion)
             case _                                     => None
           }
           fs2.Stream.eval(
             Logger[F].debug(
-              show"Refreshing watcher subscription from revision ${maybeLastSeenRevision.getOrElse[String]("initial")} (trigger: $throwable)"
+              show"Refreshing watcher subscription from revision ${maybeLastSeenRevision.getOrElse[String]("initial")} (trigger: $error)"
             )
           ) >> watcherStream(maybeLastSeenRevision)
         case (_, Right(event)) =>
