@@ -69,7 +69,7 @@ lazy val core = (project in file("core"))
       "co.fs2"        %% "fs2-core"            % "3.11.0",
       "org.scalameta" %% "munit"               % "1.0.3" % Test,
       "org.typelevel" %% "munit-cats-effect"   % "2.0.0" % Test,
-      "org.typelevel" %% "cats-effect-testkit" % "3.5.5" % Test,
+      "org.typelevel" %% "cats-effect-testkit" % "3.5.7" % Test,
       "org.typelevel" %% "log4cats-slf4j"      % "2.7.0" % Test,
       "ch.qos.logback" % "logback-classic"     % "1.5.9" % Test
     )
@@ -83,7 +83,7 @@ lazy val patterns = (project in file("patterns"))
     libraryDependencies ++= Seq(
       "org.scalameta" %% "munit"               % "1.0.3" % Test,
       "org.typelevel" %% "munit-cats-effect"   % "2.0.0" % Test,
-      "org.typelevel" %% "cats-effect-testkit" % "3.5.5" % Test
+      "org.typelevel" %% "cats-effect-testkit" % "3.5.7" % Test
     )
   )
   .dependsOn(core % "compile->compile;test->test")
