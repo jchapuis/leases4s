@@ -106,7 +106,7 @@ lazy val example = (project in file("example"))
       "org.http4s"             %% "http4s-ember-client" % "0.23.30" % Test
     ),
     libraryDependencies ++= Seq(
-      "org.jsoup"              % "jsoup"           % "1.18.1",
+      "org.jsoup"              % "jsoup"           % "1.18.3",
       "software.amazon.awssdk" % "s3"              % "2.29.33",
       "ch.qos.logback"         % "logback-classic" % "1.5.9"
     )
