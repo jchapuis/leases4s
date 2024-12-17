@@ -107,7 +107,7 @@ lazy val example = (project in file("example"))
     ),
     libraryDependencies ++= Seq(
       "org.jsoup"              % "jsoup"           % "1.18.1",
-      "software.amazon.awssdk" % "s3"              % "2.29.33",
+      "software.amazon.awssdk" % "s3"              % "2.29.35",
       "ch.qos.logback"         % "logback-classic" % "1.5.9"
     )
   )
