@@ -8,4 +8,4 @@ addSbtPlugin("com.github.sbt" % "sbt-ci-release" % "1.9.0")
 
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.2")
 
-addSbtPlugin("de.gccc.sbt" % "sbt-jib" % "1.3.7")
+addSbtPlugin("de.gccc.sbt" % "sbt-jib" % "1.4.1")
