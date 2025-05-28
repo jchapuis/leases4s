@@ -64,13 +64,13 @@ lazy val core = (project in file("core"))
   .settings(
     libraryDependencies ++= Seq(
       "com.goyeau"    %% "kubernetes-client"   % "0.11.0",
-      "org.typelevel" %% "log4cats-core"       % "2.7.0",
+      "org.typelevel" %% "log4cats-core"       % "2.7.1",
       "org.typelevel" %% "literally"           % "1.2.0",
       "co.fs2"        %% "fs2-core"            % "3.11.0",
       "org.scalameta" %% "munit"               % "1.0.3" % Test,
       "org.typelevel" %% "munit-cats-effect"   % "2.0.0" % Test,
       "org.typelevel" %% "cats-effect-testkit" % "3.5.7" % Test,
-      "org.typelevel" %% "log4cats-slf4j"      % "2.7.0" % Test,
+      "org.typelevel" %% "log4cats-slf4j"      % "2.7.1" % Test,
       "ch.qos.logback" % "logback-classic"     % "1.5.9" % Test
     )
   )
@@ -101,7 +101,7 @@ lazy val example = (project in file("example"))
       "io.circe"               %% "circe-generic"       % "0.14.10",
       "com.lihaoyi"            %% "scalatags"           % "0.13.1",
       "org.scala-lang.modules" %% "scala-xml"           % "2.3.0",
-      "org.typelevel"          %% "log4cats-slf4j"      % "2.7.0",
+      "org.typelevel"          %% "log4cats-slf4j"      % "2.7.1",
       "org.typelevel"          %% "munit-cats-effect"   % "2.0.0"   % Test,
       "org.http4s"             %% "http4s-ember-client" % "0.23.30" % Test
     ),
