@@ -6,6 +6,6 @@ addSbtPlugin("ch.epfl.scala" % "sbt-version-policy" % "3.2.1")
 
 addSbtPlugin("com.github.sbt" % "sbt-ci-release" % "1.9.0")
 
-addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.2")
+addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.5")
 
 addSbtPlugin("de.gccc.sbt" % "sbt-jib" % "1.3.7")
