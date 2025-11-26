@@ -1,4 +1,4 @@
-val scala213 = "2.13.15"
+val scala213 = "2.13.18"
 val scala3   = "3.6.2"
 
 val commonSettings = Seq(
