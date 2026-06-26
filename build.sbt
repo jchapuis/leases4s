@@ -98,7 +98,7 @@ lazy val example = (project in file("example"))
       "org.http4s"             %% "http4s-dsl"          % "0.23.30",
       "org.http4s"             %% "http4s-circe"        % "0.23.30",
       "org.http4s"             %% "http4s-ember-server" % "0.23.30",
-      "io.circe"               %% "circe-generic"       % "0.14.10",
+      "io.circe"               %% "circe-generic"       % "0.14.16",
       "com.lihaoyi"            %% "scalatags"           % "0.13.1",
       "org.scala-lang.modules" %% "scala-xml"           % "2.3.0",
       "org.typelevel"          %% "log4cats-slf4j"      % "2.7.0",
